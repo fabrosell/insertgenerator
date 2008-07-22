@@ -9,6 +9,7 @@ namespace Suru.InsertGenerator.BusinessLogic
         private String _HostName;
         private String _UserName;
         private String _Password;
+        private AuthenticationMethods _Authentication;
 
         #region Encapsulamiento de Atributos
 
@@ -23,6 +24,22 @@ namespace Suru.InsertGenerator.BusinessLogic
             get { return _UserName; }
             set { _UserName = value; }
         }
+
+        public AuthenticationMethods Authentication
+        {
+            get { return _Authentication; }
+            set 
+            { 
+                 _Authentication = value;
+                if (value == AuthenticationMethods.Windows)
+                {
+                    //Make Local User and Password unavailable for storing
+                    _UserName = null;
+                    _Password = null;
+                }
+            }
+        }
+
 
         #endregion
 
@@ -45,4 +62,6 @@ namespace Suru.InsertGenerator.BusinessLogic
             throw new Exception("This method has not been implemented.");
         }
     }
+
+    public enum AuthenticationMethods { SqlServer, Windows };
 }

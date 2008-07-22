@@ -47,7 +47,7 @@
             this.lblServer.Location = new System.Drawing.Point(12, 15);
             this.lblServer.Name = "lblServer";
             this.lblServer.Size = new System.Drawing.Size(72, 13);
-            this.lblServer.TabIndex = 1;
+            this.lblServer.TabIndex = 0;
             this.lblServer.Text = "&Server Name:";
             // 
             // lblLogin
@@ -56,7 +56,7 @@
             this.lblLogin.Location = new System.Drawing.Point(31, 69);
             this.lblLogin.Name = "lblLogin";
             this.lblLogin.Size = new System.Drawing.Size(36, 13);
-            this.lblLogin.TabIndex = 3;
+            this.lblLogin.TabIndex = 4;
             this.lblLogin.Text = "&Login:";
             // 
             // cmbLogin
@@ -65,14 +65,14 @@
             this.cmbLogin.Location = new System.Drawing.Point(152, 66);
             this.cmbLogin.Name = "cmbLogin";
             this.cmbLogin.Size = new System.Drawing.Size(223, 21);
-            this.cmbLogin.TabIndex = 3;
+            this.cmbLogin.TabIndex = 5;
             // 
             // btnConnect
             // 
             this.btnConnect.Location = new System.Drawing.Point(92, 153);
             this.btnConnect.Name = "btnConnect";
             this.btnConnect.Size = new System.Drawing.Size(98, 23);
-            this.btnConnect.TabIndex = 2;
+            this.btnConnect.TabIndex = 9;
             this.btnConnect.Text = "&Connect";
             this.btnConnect.UseVisualStyleBackColor = true;
             // 
@@ -82,7 +82,7 @@
             this.cmbServerName.Location = new System.Drawing.Point(122, 12);
             this.cmbServerName.Name = "cmbServerName";
             this.cmbServerName.Size = new System.Drawing.Size(253, 21);
-            this.cmbServerName.TabIndex = 8;
+            this.cmbServerName.TabIndex = 1;
             // 
             // cmbAuthentication
             // 
@@ -90,7 +90,7 @@
             this.cmbAuthentication.Location = new System.Drawing.Point(122, 39);
             this.cmbAuthentication.Name = "cmbAuthentication";
             this.cmbAuthentication.Size = new System.Drawing.Size(253, 21);
-            this.cmbAuthentication.TabIndex = 10;
+            this.cmbAuthentication.TabIndex = 3;
             // 
             // lblAuthentication
             // 
@@ -98,7 +98,7 @@
             this.lblAuthentication.Location = new System.Drawing.Point(12, 42);
             this.lblAuthentication.Name = "lblAuthentication";
             this.lblAuthentication.Size = new System.Drawing.Size(78, 13);
-            this.lblAuthentication.TabIndex = 9;
+            this.lblAuthentication.TabIndex = 2;
             this.lblAuthentication.Text = "&Authentication:";
             // 
             // lblPassword
@@ -107,7 +107,7 @@
             this.lblPassword.Location = new System.Drawing.Point(31, 93);
             this.lblPassword.Name = "lblPassword";
             this.lblPassword.Size = new System.Drawing.Size(56, 13);
-            this.lblPassword.TabIndex = 11;
+            this.lblPassword.TabIndex = 6;
             this.lblPassword.Text = "&Password:";
             // 
             // txtPassword
@@ -116,7 +116,7 @@
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.PasswordChar = '●';
             this.txtPassword.Size = new System.Drawing.Size(223, 20);
-            this.txtPassword.TabIndex = 12;
+            this.txtPassword.TabIndex = 7;
             // 
             // btnCancel
             // 
@@ -124,7 +124,7 @@
             this.btnCancel.Location = new System.Drawing.Point(196, 153);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(98, 23);
-            this.btnCancel.TabIndex = 13;
+            this.btnCancel.TabIndex = 10;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
@@ -135,7 +135,7 @@
             this.chkRememberPassword.Location = new System.Drawing.Point(152, 119);
             this.chkRememberPassword.Name = "chkRememberPassword";
             this.chkRememberPassword.Size = new System.Drawing.Size(126, 17);
-            this.chkRememberPassword.TabIndex = 14;
+            this.chkRememberPassword.TabIndex = 8;
             this.chkRememberPassword.Text = "Remember Password";
             this.chkRememberPassword.UseVisualStyleBackColor = true;
             // 
@@ -160,6 +160,7 @@
             this.MaximizeBox = false;
             this.Name = "frmConnectServer";
             this.Text = "Connect to Server";
+            this.Load += new System.EventHandler(this.frmConnectServer_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

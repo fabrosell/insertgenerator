@@ -9,3 +9,4 @@ C:\Documents and Settings\frosell\Mis documentos\Visual Studio 2005\Projects\Gen
 C:\Documents and Settings\frosell\Mis documentos\Visual Studio 2005\Projects\GeneradorInserts\GeneradorInserts\bin\Debug\Suru.InsertGenerator.BusinessLogic.pdb
 C:\Documents and Settings\frosell\Mis documentos\Visual Studio 2005\Projects\GeneradorInserts\GeneradorInserts\obj\Debug\Suru.InsertGenerator.GeneradorUI.frmInserts.resources
 C:\Documents and Settings\frosell\Mis documentos\Visual Studio 2005\Projects\GeneradorInserts\GeneradorInserts\obj\Debug\GeneradorInserts.frmConnectServer.resources
+C:\Documents and Settings\frosell\Mis documentos\Visual Studio 2005\Projects\GeneradorInserts\GeneradorInserts\bin\Debug\Suru.InsertGenerator.GeneradorUI.exe.config
