@@ -1,4 +1,4 @@
-﻿namespace GeneradorInserts
+﻿namespace Suru.InsertGenerator.GeneradorUI
 {
     partial class frmConnectServer
     {
@@ -62,9 +62,9 @@
             // cmbLogin
             // 
             this.cmbLogin.FormattingEnabled = true;
-            this.cmbLogin.Location = new System.Drawing.Point(152, 66);
+            this.cmbLogin.Location = new System.Drawing.Point(140, 66);
             this.cmbLogin.Name = "cmbLogin";
-            this.cmbLogin.Size = new System.Drawing.Size(223, 21);
+            this.cmbLogin.Size = new System.Drawing.Size(235, 21);
             this.cmbLogin.TabIndex = 5;
             // 
             // btnConnect
@@ -75,6 +75,7 @@
             this.btnConnect.TabIndex = 9;
             this.btnConnect.Text = "&Connect";
             this.btnConnect.UseVisualStyleBackColor = true;
+            this.btnConnect.Click += new System.EventHandler(this.btnConnect_Click);
             // 
             // cmbServerName
             // 
@@ -112,10 +113,10 @@
             // 
             // txtPassword
             // 
-            this.txtPassword.Location = new System.Drawing.Point(152, 93);
+            this.txtPassword.Location = new System.Drawing.Point(140, 93);
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.PasswordChar = '●';
-            this.txtPassword.Size = new System.Drawing.Size(223, 20);
+            this.txtPassword.Size = new System.Drawing.Size(235, 20);
             this.txtPassword.TabIndex = 7;
             // 
             // btnCancel
@@ -132,7 +133,7 @@
             // chkRememberPassword
             // 
             this.chkRememberPassword.AutoSize = true;
-            this.chkRememberPassword.Location = new System.Drawing.Point(152, 119);
+            this.chkRememberPassword.Location = new System.Drawing.Point(140, 119);
             this.chkRememberPassword.Name = "chkRememberPassword";
             this.chkRememberPassword.Size = new System.Drawing.Size(126, 17);
             this.chkRememberPassword.TabIndex = 8;
