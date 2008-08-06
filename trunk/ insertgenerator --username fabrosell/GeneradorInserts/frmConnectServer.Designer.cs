@@ -92,6 +92,7 @@
             this.cmbAuthentication.Name = "cmbAuthentication";
             this.cmbAuthentication.Size = new System.Drawing.Size(253, 21);
             this.cmbAuthentication.TabIndex = 3;
+            this.cmbAuthentication.SelectedIndexChanged += new System.EventHandler(this.cmbAuthentication_SelectedIndexChanged);
             // 
             // lblAuthentication
             // 

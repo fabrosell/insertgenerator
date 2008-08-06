@@ -39,12 +39,14 @@
             this.tssServerName = new System.Windows.Forms.ToolStripStatusLabel();
             this.tssUserName = new System.Windows.Forms.ToolStripStatusLabel();
             this.btnChangeConnection = new System.Windows.Forms.Button();
+            this.tssErrorMessage = new System.Windows.Forms.ToolStripStatusLabel();
             ((System.ComponentModel.ISupportInitialize)(this.dgvTables)).BeginInit();
             this.ssStateBar.SuspendLayout();
             this.SuspendLayout();
             // 
             // cmbDataBase
             // 
+            this.cmbDataBase.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbDataBase.FormattingEnabled = true;
             this.cmbDataBase.Location = new System.Drawing.Point(75, 12);
             this.cmbDataBase.Name = "cmbDataBase";
@@ -102,7 +104,8 @@
             // 
             this.ssStateBar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tssServerName,
-            this.tssUserName});
+            this.tssUserName,
+            this.tssErrorMessage});
             this.ssStateBar.Location = new System.Drawing.Point(0, 403);
             this.ssStateBar.Name = "ssStateBar";
             this.ssStateBar.Size = new System.Drawing.Size(346, 22);
@@ -128,6 +131,12 @@
             this.btnChangeConnection.Size = new System.Drawing.Size(34, 23);
             this.btnChangeConnection.TabIndex = 7;
             this.btnChangeConnection.UseVisualStyleBackColor = true;
+            // 
+            // tssErrorMessage
+            // 
+            this.tssErrorMessage.Name = "tssErrorMessage";
+            this.tssErrorMessage.Size = new System.Drawing.Size(119, 17);
+            this.tssErrorMessage.Text = "[ErrorMessage (if any)]";
             // 
             // frmInserts
             // 
@@ -166,5 +175,6 @@
         private System.Windows.Forms.ToolStripStatusLabel tssServerName;
         private System.Windows.Forms.ToolStripStatusLabel tssUserName;
         private System.Windows.Forms.Button btnChangeConnection;
+        private System.Windows.Forms.ToolStripStatusLabel tssErrorMessage;
     }
 }

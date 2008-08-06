@@ -13,6 +13,8 @@ namespace Suru.InsertGenerator.GeneradorUI
     {
         public String FoobarMessage = "[I won't show it!]";
         private Connection DBConnection;
+        List<Connection> lConnections = null;
+        Connection CurrentConnection = null;
 
         public frmConnectServer()
         {
@@ -54,6 +56,8 @@ namespace Suru.InsertGenerator.GeneradorUI
         private void frmConnectServer_Load(object sender, EventArgs e)
         {
             Load_AuthenticationMethods();
+
+            Cargar_Logins();
         }
 
         private void btnConnect_Click(object sender, EventArgs e)
@@ -68,10 +72,13 @@ namespace Suru.InsertGenerator.GeneradorUI
 
             switch (cmbAuthentication.SelectedIndex)
             {
-                case 0:
-                    MessageBox.Show("This Feature has not been implemented yet", "Sorry", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                case 0: //Windows Authentication
+                    //Only Server Name is required for Windows Authentication
+                    DBConnection = new Connection();
+                    DBConnection.HostName = cmbServerName.Text.Trim();
+
                     break;
-                case 1:
+                case 1: //SQL Authentication
                     //Create a Connection object
                     DBConnection = new Connection(txtPassword.Text.Trim());
 
@@ -79,9 +86,8 @@ namespace Suru.InsertGenerator.GeneradorUI
                     txtPassword.Text = FoobarMessage;                    
 
                     //Complete the other paramethers
-                    DBConnection.Authentication = AuthenticationMethods.SqlServer;
-                    DBConnection.HostName = cmbServerName.SelectedItem.ToString().Trim();
-                    DBConnection.UserName = cmbLogin.SelectedItem.ToString().Trim();
+                    DBConnection.HostName = cmbServerName.Text.Trim();
+                    DBConnection.UserName = cmbLogin.Text.Trim();
                     DBConnection.SavePassword = chkRememberPassword.Checked;
 
                     break;
@@ -99,7 +105,7 @@ namespace Suru.InsertGenerator.GeneradorUI
 
                 InsertGeneratorForm.Show();
 
-                this.Dispose();
+                this.Dispose(false);
             }
             else
             {
@@ -110,16 +116,75 @@ namespace Suru.InsertGenerator.GeneradorUI
 
                 MessageBox.Show(ErrorMessage, "Connect to Server", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
-                //Enable disabled Controls.                
-                cmbServerName.Enabled = true;
-                cmbAuthentication.Enabled = true;
-                cmbLogin.Enabled = true;
-                txtPassword.Enabled = true;
-                txtPassword.Text = "";
-                btnConnect.Enabled = true;
-                btnCancel.Enabled = true;
-            }
 
+                //Enable disabled controls by Authentication Method
+                switch (cmbAuthentication.SelectedIndex)
+                {
+                    case 0: //Windows Authentication
+                        cmbLogin.Enabled = false;
+                        txtPassword.Enabled = false;
+                        chkRememberPassword.Checked = false;
+                        chkRememberPassword.Enabled = false;
+                        break;
+                    case 1: //SQL Server Authentication
+                        cmbLogin.Enabled = true;
+                        txtPassword.Enabled = true;
+                        chkRememberPassword.Enabled = true;
+                        break;
+                    default:
+                        return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Load all logins, set the last one which has a sucessfull connections as the default.
+        /// </summary>
+        private void Cargar_Logins()
+        {
+            lConnections = Connection.GetConnections();
+
+            foreach (Connection c in lConnections)
+            {
+
+            }
+        }
+
+        private void cmbAuthentication_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            switch (cmbAuthentication.SelectedIndex)
+            {
+                case 0: //Windows Authentication
+                    cmbLogin.Text = SystemInformation.UserDomainName + @"\" + SystemInformation.UserName;
+                    cmbLogin.Enabled = false;
+                    txtPassword.Text = "";
+                    txtPassword.Enabled = false;
+                    chkRememberPassword.Checked = false;
+                    chkRememberPassword.Enabled = false;
+                    break;
+                case 1: //SQL Server Authentication
+                    cmbLogin.Enabled = true;
+                    txtPassword.Enabled = true;
+                    chkRememberPassword.Enabled = true;
+
+                    if (CurrentConnection != null)
+                    {
+                        cmbLogin.Text = CurrentConnection.UserName;
+                        txtPassword.Text = FoobarMessage;
+                        chkRememberPassword.Checked = CurrentConnection.SavePassword;
+                    }
+                    else
+                    {
+                        cmbLogin.Text = "";
+                        txtPassword.Text = "";
+                        chkRememberPassword.Checked = false;
+                    }
+                    break;
+                default:
+                    MessageBox.Show("Unknown Authentication Method", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    this.Dispose();
+                    break;
+            }
         }
     }  
 }
