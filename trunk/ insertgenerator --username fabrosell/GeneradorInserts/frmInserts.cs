@@ -15,14 +15,17 @@ namespace Suru.InsertGenerator.GeneradorUI
         private List<String> TableList = null;
         private const String CheckBoxColumnName = "[Selected]";
         private const String TableColumnName = "[Table]";
+        private frmConnectServer Parent;
 
         /// <summary>
         /// Class' constructor.
         /// </summary>
         /// <param name="conn">Connection to work with.</param>
-        public frmInserts(Connection conn)
+        public frmInserts(Connection conn, frmConnectServer fParent)
         {
             DBConnection = conn;
+
+            Parent = fParent;
 
             InitializeComponent();
         }
@@ -68,12 +71,16 @@ namespace Suru.InsertGenerator.GeneradorUI
                         DataGridViewCheckBoxColumn dchkColumn = new DataGridViewCheckBoxColumn();
                         dchkColumn.Name = CheckBoxColumnName;
                         dchkColumn.HeaderText = "Select";
+                        dchkColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
                         dgvTables.Columns.Add(dchkColumn);
 
                         DataGridViewTextBoxColumn dtxtColumn = new DataGridViewTextBoxColumn();
                         dtxtColumn.Name = TableColumnName;
                         dtxtColumn.ReadOnly = true;
-                        dtxtColumn.HeaderText = "Table";
+                        dtxtColumn.HeaderText = "Table";                        
+                        dgvTables.Columns.Add(dtxtColumn);
+
+                        dgvTables.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
                     }
                 }
                 else
@@ -81,30 +88,42 @@ namespace Suru.InsertGenerator.GeneradorUI
 
                 dgvTables.Rows.Clear();
 
-                DataGridViewCheckBoxCell dchkcell;
-                DataGridViewTextBoxCell dtxtCell;
                 DataGridViewRow dr;
 
                 //Loads table on DataGrid
+                Int32 iNumFila = 0;
                 foreach (String s in TableList)
                 {
                     dr = new DataGridViewRow();
+                    dgvTables.Rows.Add(dr);                    
+                    
+                    dgvTables.Rows[iNumFila].Cells[CheckBoxColumnName] = new DataGridViewCheckBoxCell();
+                    dgvTables.Rows[iNumFila].Cells[CheckBoxColumnName].Value = false;
 
-                    dchkcell = new DataGridViewCheckBoxCell();
-                    dchkcell.Value = false;
-                    dr.Cells.Add(dchkcell);
+                    dgvTables.Rows[iNumFila].Cells[TableColumnName] = new DataGridViewTextBoxCell();
+                    dgvTables.Rows[iNumFila].Cells[TableColumnName].Value = s;
 
-                    dtxtCell = new DataGridViewTextBoxCell();
-                    dtxtCell.Value = s;
-                    dr.Cells.Add(dtxtCell);
-
-                    dgvTables.Rows.Add(dr);
-                }
+                    iNumFila++;
+               }
             }
             else
             {
                 //TableList is null: user has not enough privileges or some error happened.
             }
+        }
+
+        //When the Selected Database changes, Table DataGrid must be reloaded.
+        private void cmbDataBase_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Load_DataBase_Tables();
+            dgvTables.Focus();
+        }
+
+        //When form is closing, parent and current form must be disposed
+        private void frmInserts_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Parent.Dispose();
+            this.Dispose();
         }
     }
 }

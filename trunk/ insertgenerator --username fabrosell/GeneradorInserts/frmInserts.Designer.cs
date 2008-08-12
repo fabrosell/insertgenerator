@@ -38,8 +38,8 @@
             this.ssStateBar = new System.Windows.Forms.StatusStrip();
             this.tssServerName = new System.Windows.Forms.ToolStripStatusLabel();
             this.tssUserName = new System.Windows.Forms.ToolStripStatusLabel();
-            this.btnChangeConnection = new System.Windows.Forms.Button();
             this.tssErrorMessage = new System.Windows.Forms.ToolStripStatusLabel();
+            this.btnChangeConnection = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgvTables)).BeginInit();
             this.ssStateBar.SuspendLayout();
             this.SuspendLayout();
@@ -52,6 +52,7 @@
             this.cmbDataBase.Name = "cmbDataBase";
             this.cmbDataBase.Size = new System.Drawing.Size(219, 21);
             this.cmbDataBase.TabIndex = 0;
+            this.cmbDataBase.SelectedIndexChanged += new System.EventHandler(this.cmbDataBase_SelectedIndexChanged);
             // 
             // lblDatabase
             // 
@@ -64,11 +65,14 @@
             // 
             // dgvTables
             // 
+            this.dgvTables.AllowUserToAddRows = false;
+            this.dgvTables.AllowUserToDeleteRows = false;
             this.dgvTables.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvTables.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvTables.Location = new System.Drawing.Point(0, 87);
             this.dgvTables.Name = "dgvTables";
+            this.dgvTables.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvTables.Size = new System.Drawing.Size(346, 313);
             this.dgvTables.TabIndex = 2;
             // 
@@ -89,6 +93,7 @@
             this.chkSelectAll.Size = new System.Drawing.Size(70, 17);
             this.chkSelectAll.TabIndex = 4;
             this.chkSelectAll.Text = "Select All";
+            this.chkSelectAll.ThreeState = true;
             this.chkSelectAll.UseVisualStyleBackColor = true;
             // 
             // btnOptions
@@ -123,6 +128,12 @@
             this.tssUserName.Size = new System.Drawing.Size(67, 17);
             this.tssUserName.Text = "[User Name]";
             // 
+            // tssErrorMessage
+            // 
+            this.tssErrorMessage.Name = "tssErrorMessage";
+            this.tssErrorMessage.Size = new System.Drawing.Size(119, 17);
+            this.tssErrorMessage.Text = "[ErrorMessage (if any)]";
+            // 
             // btnChangeConnection
             // 
             this.btnChangeConnection.Image = ((System.Drawing.Image)(resources.GetObject("btnChangeConnection.Image")));
@@ -131,12 +142,6 @@
             this.btnChangeConnection.Size = new System.Drawing.Size(34, 23);
             this.btnChangeConnection.TabIndex = 7;
             this.btnChangeConnection.UseVisualStyleBackColor = true;
-            // 
-            // tssErrorMessage
-            // 
-            this.tssErrorMessage.Name = "tssErrorMessage";
-            this.tssErrorMessage.Size = new System.Drawing.Size(119, 17);
-            this.tssErrorMessage.Text = "[ErrorMessage (if any)]";
             // 
             // frmInserts
             // 
@@ -155,6 +160,7 @@
             this.Name = "frmInserts";
             this.Text = "Suru Insert Generator";
             this.Load += new System.EventHandler(this.frmInserts_Load);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmInserts_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.dgvTables)).EndInit();
             this.ssStateBar.ResumeLayout(false);
             this.ssStateBar.PerformLayout();

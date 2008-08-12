@@ -3,11 +3,16 @@ using System.Collections.Generic;
 using System.Text;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
+using System.Configuration;
+using System.Xml;
 
 namespace Suru.InsertGenerator.BusinessLogic
 {
     public class Connection
     {
+        #region Local Variables and Constants
+
         //Defining and defaulting parameters
         private String _HostName = null;
         private String _UserName = null;
@@ -34,6 +39,8 @@ namespace Suru.InsertGenerator.BusinessLogic
         //Connections Strings. I currently know only two authentication methods.
         private const String SQL_Authenticacion_ConnectionString = "Data Source=" + ServerPrefix + ";Initial Catalog=" + DatabasePrefix + ";User Id=" + UserPrefix + ";Password=" + PasswordPrefix + ";";
         private const String Windows_Authenticacion_ConnectionString = "Server=" + ServerPrefix + ";Database=" + DatabasePrefix + ";Trusted_Connection=True;";        
+
+        #endregion
 
         #region Attribute Encapsulation
 
@@ -114,18 +121,208 @@ namespace Suru.InsertGenerator.BusinessLogic
         /// <returns>List of Connections</returns>
         public static List<Connection> GetConnections()
         {
+            List<Connection> lConnections = new List<Connection>();
+
             //Get the list of connections and his logins
-            //throw new Exception("This method has not been implemented.");
-            return new List<Connection>();
+            try
+            {
+                StreamReader sr = new StreamReader(ConfigurationManager.AppSettings.Get("ConfigurationFile"));
+                Connection c;
+
+                /* Configuration File Structure
+                 * <Connections>
+                 *  <Connection>
+                 *    <Host>HostName</Host>
+                 *    <User>UserName</User>
+                 *    <Pass>Password</Pass>
+                 *    <Authentication></Authentication>
+                 *    <DataBase>Database</DataBase>
+                 *    <IsLastSuccessful>Boolean</IsLastSuccessful>
+                 *    <PasswordSaved>Boolean</PasswordSaved>
+                 *  </Connection>
+                 * </Connections>
+                 * 
+                 * Note: Inside 'Connection' tags the data will be encrypted. */
+
+                try
+                {
+                    XmlDocument xmlConnectionFile = new XmlDocument();
+                    xmlConnectionFile.LoadXml(sr.ReadToEnd());
+                    XmlNodeList xmlConnectionNodeList = xmlConnectionFile.DocumentElement.SelectNodes("//Connection");
+                    XmlNodeList xmlTempNodes;
+
+                    foreach (XmlNode xmlConnection in xmlConnectionNodeList)
+                    {
+                        c = new Connection();
+
+                        xmlTempNodes = xmlConnection.SelectNodes("descendant::Host");
+                        c.HostName = xmlTempNodes[0].InnerText;
+
+                        xmlTempNodes = xmlConnection.SelectNodes("descendant::User");
+                        c.UserName = xmlTempNodes[0].InnerText;
+
+                        xmlTempNodes = xmlConnection.SelectNodes("descendant::Pass");
+                        c._Password = xmlTempNodes[0].InnerText;
+
+                        xmlTempNodes = xmlConnection.SelectNodes("descendant::Authentication");
+
+                        //Authentication method by default.
+                        c._Authentication = AuthenticationMethods.Windows;
+
+                        if (xmlTempNodes[0].InnerText == AuthenticationMethods.SqlServer.ToString())
+                            c._Authentication = AuthenticationMethods.SqlServer;
+
+                        if (xmlTempNodes[0].InnerText == AuthenticationMethods.Windows.ToString())
+                            c._Authentication = AuthenticationMethods.Windows;
+
+                        xmlTempNodes = xmlConnection.SelectNodes("descendant::DataBase");
+                        c.Last_DataBase = xmlTempNodes[0].InnerText;
+
+                        xmlTempNodes = xmlConnection.SelectNodes("descendant::IsLastSuccessful");
+
+                        if (bool.Parse(xmlTempNodes[0].InnerText))
+                            c.IsLastSucessfulLogin = true;
+                        else
+                            c.IsLastSucessfulLogin = false;
+
+                        xmlTempNodes = xmlConnection.SelectNodes("descendant::PasswordSaved");
+
+                        if (bool.Parse(xmlTempNodes[0].InnerText))
+                            c.SavePassword = true;
+                        else
+                            c.SavePassword = false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new XmlException("XML data not properly formed");
+                }
+                finally
+                {
+                    sr.Close();
+                }
+            }
+            catch (XmlException xmlex)
+            {
+                throw xmlex;
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Can't load configuration file " + ConfigurationManager.AppSettings.Get("ConfigurationFile"));
+            }
+            
+            return lConnections;
         }
 
         /// <summary>
         /// Save the current conection to the XML
         /// </summary>
-        public void SaveConnection()
+        public void SaveConnection(List<Connection> lConnections)
         {
-            //For one connection, several logins may exists.
-            //throw new Exception("This method has not been implemented.");
+            /* Configuration File Structure
+             * <Connections>
+             *  <Connection>
+             *    <Host>HostName</Host>
+             *    <User>UserName</User>
+             *    <Pass>Password</Pass>
+             *    <Authentication></Authentication>
+             *    <DataBase>Database</DataBase>
+             *    <IsLastSuccessful>Boolean</IsLastSuccessful>
+             *    <PasswordSaved>Boolean</PasswordSaved>
+             *  </Connection>
+             * </Connections>
+             * 
+             * Note: Inside 'Connection' tags the data will be encrypted. */
+
+            try
+            {
+                StreamReader sr = new StreamReader(ConfigurationManager.AppSettings.Get("ConfigurationFile"));
+                String sXmlContent = null;
+
+                try
+                {                                        
+                    sXmlContent = sr.ReadToEnd();
+                    sr.Close();
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+                finally
+                {
+                    sr.Close();   
+                }
+
+                try
+                {
+                    Connection OverwritingConnection = null;
+
+                    //For one connection, several logins may exists.            
+                    //Criteria for overwriting connections:
+                    //  -- Hostname must be the same
+                    //  -- Username must be the same
+                    //  -- Authentication Method must be the same
+
+                    Predicate<Connection> Find_Connection = delegate(Connection cCon)
+                    {
+                        return cCon._Authentication == _Authentication &&
+                               cCon.HostName == _HostName &&
+                               cCon.UserName == _UserName;
+                    };
+
+                    OverwritingConnection = lConnections.Find(Find_Connection);
+
+                    XmlDocument xmlConnectionFile = new XmlDocument();
+                    xmlConnectionFile.LoadXml(sXmlContent);
+                    XmlNodeList xmlConnectionNodeList = xmlConnectionFile.DocumentElement.SelectNodes("//Connection");
+                    XmlNodeList xmlTempNodes;
+
+                    //The connection exists and must be overwritten
+                    if (OverwritingConnection != null)
+                    {
+                        foreach (XmlNode xmlConnection in xmlConnectionNodeList)
+                        {
+                        }
+                    }
+                    else
+                    {
+                        String sUserName = "";
+                        String sPassword = "";
+
+                        if (_UserName != null)
+                            sUserName = _UserName;
+
+                        if (_Password != null)
+                            sPassword = _Password;
+
+                        //The connection does not exist and must be appended
+                        String sConnection = "<Connection>" + 
+                                                "<Host>" + _HostName + "</Host>" +
+                                                "<User>" + sUserName + "</User>" +
+                                                "<Pass>" + sPassword + "</Pass>" +
+                                                "<Authentication>" + _Authentication.ToString() + "</Authentication>" +
+                                                "<DataBase>" + _Last_DataBase + "</DataBase>" +
+                                                "<IsLastSuccessful>True</IsLastSuccessful>" +
+                                                "<PasswordSaved>" + _SavePassword.ToString()  + "<PasswordSaved>" +
+                                             "</Connection>";
+
+                    //I have to write all nodes to disk...
+                        
+                        
+                    }
+
+                    //Writes the file
+                    xmlConnectionFile.Save(ConfigurationManager.AppSettings.Get("ConfigurationFile"));
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Can't load or write configuration file " + ConfigurationManager.AppSettings.Get("ConfigurationFile")); throw new ApplicationException("Can't load configuration file " + ConfigurationManager.AppSettings.Get("ConfigurationFile"));
+            }
         }
 
         /// <summary>

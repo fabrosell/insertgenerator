@@ -99,13 +99,13 @@ namespace Suru.InsertGenerator.GeneradorUI
             //If connecting is succesful, save the connection
             if (DBConnection.TestConnection())
             {
-                DBConnection.SaveConnection();
+                this.Hide();
 
-                frmInserts InsertGeneratorForm = new frmInserts(DBConnection);
+                DBConnection.SaveConnection(lConnections);                
+
+                frmInserts InsertGeneratorForm = new frmInserts(DBConnection, this);
 
                 InsertGeneratorForm.Show();
-
-                this.Dispose(false);
             }
             else
             {
@@ -138,7 +138,7 @@ namespace Suru.InsertGenerator.GeneradorUI
         }
 
         /// <summary>
-        /// Load all logins, set the last one which has a sucessfull connections as the default.
+        /// Load all logins, set the last one which had a sucessful connection as the default.
         /// </summary>
         private void Cargar_Logins()
         {
