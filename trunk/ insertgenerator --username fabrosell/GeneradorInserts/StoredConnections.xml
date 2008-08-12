@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Connections>
+	<Connection>
+		<Host>192.168.253.138</Host>
+		<User></User>
+		<Pass></Pass>
+		<Authentication>Windows</Authentication>
+		<DataBase>Recaudaciones</DataBase>
+		<IsLastSuccessful>True</IsLastSuccessful>
+		<PasswordSaved>False</PasswordSaved>
+	</Connection>
+	<Connection>
+		<Host>192.168.253.138</Host>
+		<User>test</User>
+		<Pass></Pass>
+		<Authentication>SqlServer</Authentication>
+		<DataBase>Recaudaciones</DataBase>
+		<IsLastSuccessful>False</IsLastSuccessful>
+		<PasswordSaved>True</PasswordSaved>
+	</Connection>
+</Connections>
