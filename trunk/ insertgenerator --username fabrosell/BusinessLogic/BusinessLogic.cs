@@ -312,7 +312,7 @@ namespace Suru.InsertGenerator.BusinessLogic
                     }
 
                     //Writes the file
-                    xmlConnectionFile.Save(ConfigurationManager.AppSettings.Get("ConfigurationFile"));
+                    //xmlConnectionFile.Save(ConfigurationManager.AppSettings.Get("ConfigurationFile"));
                 }
                 catch (Exception ex)
                 {

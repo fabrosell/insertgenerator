@@ -84,6 +84,7 @@
             this.cmbServerName.Name = "cmbServerName";
             this.cmbServerName.Size = new System.Drawing.Size(253, 21);
             this.cmbServerName.TabIndex = 1;
+            this.cmbServerName.SelectedIndexChanged += new System.EventHandler(this.cmbServerName_SelectedIndexChanged);
             // 
             // cmbAuthentication
             // 

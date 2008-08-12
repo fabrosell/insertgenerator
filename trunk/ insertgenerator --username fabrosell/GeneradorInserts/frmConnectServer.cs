@@ -13,7 +13,7 @@ namespace Suru.InsertGenerator.GeneradorUI
     {
         public String FoobarMessage = "[I won't show it!]";
         private Connection DBConnection;
-        List<Connection> lConnections = null;
+        List<Connection> lConnections = null;        
         Connection CurrentConnection = null;
 
         public frmConnectServer()
@@ -53,13 +53,15 @@ namespace Suru.InsertGenerator.GeneradorUI
                 cmbAuthentication.SelectedIndex = 0;
         }
 
+        //Handler of Load event
         private void frmConnectServer_Load(object sender, EventArgs e)
         {
             Load_AuthenticationMethods();
 
-            Cargar_Logins();
+            Load_Logins();
         }
 
+        //Handler of Connect button. 
         private void btnConnect_Click(object sender, EventArgs e)
         {
             //Disable Controls
@@ -140,16 +142,57 @@ namespace Suru.InsertGenerator.GeneradorUI
         /// <summary>
         /// Load all logins, set the last one which had a sucessful connection as the default.
         /// </summary>
-        private void Cargar_Logins()
+        private void Load_Logins()
         {
             lConnections = Connection.GetConnections();
 
-            foreach (Connection c in lConnections)
-            {
+            cmbServerName.Items.Clear();
+            cmbLogin.Items.Clear();
 
+            lConnections = Connection.GetConnections();
+
+            if (lConnections.Count != 0)
+            {
+                //First, all server names are loaded.
+                foreach (Connection c in lConnections)
+                {
+                    cmbServerName.Items.Add(c.HostName);                        
+
+                    //Show the last sucessful login
+                    if (c.IsLastSucessfulLogin)
+                        CurrentConnection = c;
+                }
+
+                if (CurrentConnection == null)
+                    CurrentConnection = lConnections[0];
+
+                Predicate<Connection> Connection_Find = delegate(Connection c) { return c.HostName == CurrentConnection.HostName; };
+
+                List<Connection> MatchingServerNameConnections = lConnections.FindAll(Connection_Find);
+
+                //Second, all logins are loaded.
+                foreach (Connection c in MatchingServerNameConnections)
+                    cmbLogin.Items.Add(c.UserName);
+
+                //Last, the last successful connection is shown
+                cmbServerName.SelectedIndex = cmbServerName.FindString(CurrentConnection.HostName);
+                cmbLogin.SelectedIndex = cmbLogin.FindString(CurrentConnection.UserName);
+                if (CurrentConnection.SavePassword)
+                {
+                    txtPassword.Text = FoobarMessage;
+                    chkRememberPassword.Checked = true;
+                }
+                else
+                {
+                    txtPassword.Text = "";
+                    chkRememberPassword.Checked = false;
+                }
+
+                cmbAuthentication.SelectedIndex = cmbAuthentication.FindString(CurrentConnection.Authentication.ToString());
             }
         }
 
+        //Handler of Authentication Method change
         private void cmbAuthentication_SelectedIndexChanged(object sender, EventArgs e)
         {
             switch (cmbAuthentication.SelectedIndex)
@@ -185,6 +228,12 @@ namespace Suru.InsertGenerator.GeneradorUI
                     this.Dispose();
                     break;
             }
+        }
+
+        //Handler of Server change
+        private void cmbServerName_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
         }
     }  
 }
