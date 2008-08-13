@@ -191,6 +191,8 @@ namespace Suru.InsertGenerator.BusinessLogic
                             c.SavePassword = true;
                         else
                             c.SavePassword = false;
+
+                        lConnections.Add(c);
                     }
                 }
                 catch (Exception ex)
@@ -253,75 +255,88 @@ namespace Suru.InsertGenerator.BusinessLogic
                     sr.Close();   
                 }
 
+                //Rewrites the file
+                StreamWriter sw = new StreamWriter(ConfigurationManager.AppSettings.Get("ConfigurationFile"));
+
                 try
                 {
-                    Connection OverwritingConnection = null;
-
                     //For one connection, several logins may exists.            
                     //Criteria for overwriting connections:
                     //  -- Hostname must be the same
                     //  -- Username must be the same
                     //  -- Authentication Method must be the same
 
-                    Predicate<Connection> Find_Connection = delegate(Connection cCon)
-                    {
-                        return cCon._Authentication == _Authentication &&
-                               cCon.HostName == _HostName &&
-                               cCon.UserName == _UserName;
-                    };
-
-                    OverwritingConnection = lConnections.Find(Find_Connection);
-
                     XmlDocument xmlConnectionFile = new XmlDocument();
                     xmlConnectionFile.LoadXml(sXmlContent);
                     XmlNodeList xmlConnectionNodeList = xmlConnectionFile.DocumentElement.SelectNodes("//Connection");
-                    XmlNodeList xmlTempNodes;
+                    XmlNode tempNode;
+                    Boolean NodeIsFound = false;
 
-                    //The connection exists and must be overwritten
-                    if (OverwritingConnection != null)
+                    String sConnection = null;
+
+                    String sUserName = "";
+                    String sPassword = "";
+
+                    if (_UserName != null)
+                        sUserName = _UserName;
+
+                    if (_Password != null)
+                        sPassword = _Password;
+
+                    //It's always easier to rewrite the connection.
+                    sConnection = "<Connection>" +
+                                    "<Host>" + _HostName + "</Host>" +
+                                    "<User>" + sUserName + "</User>" +
+                                    "<Pass>" + sPassword + "</Pass>" +
+                                    "<Authentication>" + _Authentication.ToString() + "</Authentication>" +
+                                    "<DataBase>" + _Last_DataBase + "</DataBase>" +
+                                    "<IsLastSuccessful>True</IsLastSuccessful>" +
+                                    "<PasswordSaved>" + _SavePassword.ToString() + "<PasswordSaved>" +
+                                  "</Connection>";
+
+                    foreach (XmlNode xmlSavedConnection in xmlConnectionNodeList)
                     {
-                        foreach (XmlNode xmlConnection in xmlConnectionNodeList)
+                        NodeIsFound = false;
+
+                        tempNode = xmlSavedConnection.SelectNodes("descendant::Host")[0];
+
+                        if (tempNode.InnerText == _HostName)
                         {
+                            tempNode = xmlSavedConnection.SelectNodes("descendant::User")[0];
+
+                            if (tempNode.InnerText == _UserName)
+                            {
+                                tempNode = xmlSavedConnection.SelectNodes("descendant::Authentication")[0];
+
+                                if (tempNode.InnerText == _Authentication.ToString())
+                                    NodeIsFound = true;
+                            }
+                        }
+
+                        //NodeIsFound = True --> I found the Node
+                        if (!NodeIsFound)
+                        {
+                            sConnection += "<Connection>" + xmlSavedConnection.InnerText + "</Connection>";
                         }
                     }
-                    else
-                    {
-                        String sUserName = "";
-                        String sPassword = "";
 
-                        if (_UserName != null)
-                            sUserName = _UserName;
-
-                        if (_Password != null)
-                            sPassword = _Password;
-
-                        //The connection does not exist and must be appended
-                        String sConnection = "<Connection>" + 
-                                                "<Host>" + _HostName + "</Host>" +
-                                                "<User>" + sUserName + "</User>" +
-                                                "<Pass>" + sPassword + "</Pass>" +
-                                                "<Authentication>" + _Authentication.ToString() + "</Authentication>" +
-                                                "<DataBase>" + _Last_DataBase + "</DataBase>" +
-                                                "<IsLastSuccessful>True</IsLastSuccessful>" +
-                                                "<PasswordSaved>" + _SavePassword.ToString()  + "<PasswordSaved>" +
-                                             "</Connection>";
-
-                    //I have to write all nodes to disk...
-                        
-                        
-                    }
+                    //The Node List is complete. It must be written to the connection file.
 
                     //Writes the file
-                    //xmlConnectionFile.Save(ConfigurationManager.AppSettings.Get("ConfigurationFile"));
+                    sw.Write(sConnection);
                 }
                 catch (Exception ex)
                 {
                     throw new Exception();
                 }
+                finally
+                {
+                    sw.Close();
+                }
             }
             catch (Exception ex)
             {
-                throw new ApplicationException("Can't load or write configuration file " + ConfigurationManager.AppSettings.Get("ConfigurationFile")); throw new ApplicationException("Can't load configuration file " + ConfigurationManager.AppSettings.Get("ConfigurationFile"));
+                throw new ApplicationException("Can't load or write configuration file " + ConfigurationManager.AppSettings.Get("ConfigurationFile"));
             }
         }
 

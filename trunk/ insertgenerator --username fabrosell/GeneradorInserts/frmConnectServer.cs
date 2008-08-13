@@ -11,7 +11,7 @@ namespace Suru.InsertGenerator.GeneradorUI
 {
     public partial class frmConnectServer : Form
     {
-        public String FoobarMessage = "[I won't show it!]";
+        public String FoobarMessage = "[reveal-proof]";                                       
         private Connection DBConnection;
         List<Connection> lConnections = null;        
         Connection CurrentConnection = null;
@@ -72,25 +72,44 @@ namespace Suru.InsertGenerator.GeneradorUI
             btnConnect.Enabled = false;
             btnCancel.Enabled = false;
 
-            switch (cmbAuthentication.SelectedIndex)
+            if (CurrentConnection != null)
             {
-                case 0: //Windows Authentication
-                    //Only Server Name is required for Windows Authentication
-                    DBConnection = new Connection();
-                    DBConnection.HostName = cmbServerName.Text.Trim();
+                //If selected connection differs from current connection, set it null
+                if (CurrentConnection.HostName != cmbServerName.Text.Trim() ||
+                    CurrentConnection.UserName != cmbLogin.Text.Trim() ||
+                    CurrentConnection.Authentication != MapAuthenticationType())
+                {
+                    CurrentConnection = null;
+                }
+                else
+                    DBConnection = CurrentConnection;
+            }
+
+            switch (MapAuthenticationType())
+            {
+                case AuthenticationMethods.Windows: //Windows Authentication                    
+                    if (CurrentConnection == null)
+                    {
+                        //Only Server Name is required for Windows Authentication
+                        DBConnection = new Connection();
+                        DBConnection.HostName = cmbServerName.Text.Trim();
+                    }
 
                     break;
-                case 1: //SQL Authentication
-                    //Create a Connection object
-                    DBConnection = new Connection(txtPassword.Text.Trim());
+                case AuthenticationMethods.SqlServer: //SQL Authentication
+                    if (CurrentConnection == null)
+                    {
+                        //Create a Connection object
+                        DBConnection = new Connection(txtPassword.Text.Trim());
 
-                    //Replace the password by the foobar message, so it can't be seen with passwords revealers
-                    txtPassword.Text = FoobarMessage;                    
+                        //Replace the password by the foobar message, so it can't be seen with passwords revealers
+                        txtPassword.Text = FoobarMessage;
 
-                    //Complete the other paramethers
-                    DBConnection.HostName = cmbServerName.Text.Trim();
-                    DBConnection.UserName = cmbLogin.Text.Trim();
-                    DBConnection.SavePassword = chkRememberPassword.Checked;
+                        //Complete the other paramethers
+                        DBConnection.HostName = cmbServerName.Text.Trim();
+                        DBConnection.UserName = cmbLogin.Text.Trim();
+                        DBConnection.SavePassword = chkRememberPassword.Checked;
+                    }
 
                     break;
                 default:
@@ -117,25 +136,29 @@ namespace Suru.InsertGenerator.GeneradorUI
                                       DBConnection.ErrorMessage;
 
                 MessageBox.Show(ErrorMessage, "Connect to Server", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
-
-                //Enable disabled controls by Authentication Method
-                switch (cmbAuthentication.SelectedIndex)
-                {
-                    case 0: //Windows Authentication
-                        cmbLogin.Enabled = false;
-                        txtPassword.Enabled = false;
-                        chkRememberPassword.Checked = false;
-                        chkRememberPassword.Enabled = false;
-                        break;
-                    case 1: //SQL Server Authentication
-                        cmbLogin.Enabled = true;
-                        txtPassword.Enabled = true;
-                        chkRememberPassword.Enabled = true;
-                        break;
-                    default:
-                        return;
-                }
+            //Enable disabled controls by Authentication Method
+            btnConnect.Enabled = true;
+            btnCancel.Enabled = true;
+            cmbServerName.Enabled = true;
+            cmbAuthentication.Enabled = true;
+            
+            switch (cmbAuthentication.SelectedIndex)
+            {
+                case 0: //Windows Authentication
+                    cmbLogin.Enabled = false;
+                    txtPassword.Enabled = false;
+                    chkRememberPassword.Checked = false;
+                    chkRememberPassword.Enabled = false;
+                    break;
+                case 1: //SQL Server Authentication
+                    cmbLogin.Enabled = true;
+                    txtPassword.Enabled = true;
+                    chkRememberPassword.Enabled = true;
+                    break;
+                default:
+                    return;
             }
         }
 
@@ -156,7 +179,8 @@ namespace Suru.InsertGenerator.GeneradorUI
                 //First, all server names are loaded.
                 foreach (Connection c in lConnections)
                 {
-                    cmbServerName.Items.Add(c.HostName);                        
+                    if (cmbServerName.FindString(c.HostName) == -1)
+                        cmbServerName.Items.Add(c.HostName);
 
                     //Show the last sucessful login
                     if (c.IsLastSucessfulLogin)
@@ -172,7 +196,9 @@ namespace Suru.InsertGenerator.GeneradorUI
 
                 //Second, all logins are loaded.
                 foreach (Connection c in MatchingServerNameConnections)
-                    cmbLogin.Items.Add(c.UserName);
+                    //Omit windows authentication Logins
+                    if (c.UserName != "")
+                        cmbLogin.Items.Add(c.UserName);
 
                 //Last, the last successful connection is shown
                 cmbServerName.SelectedIndex = cmbServerName.FindString(CurrentConnection.HostName);
@@ -188,16 +214,16 @@ namespace Suru.InsertGenerator.GeneradorUI
                     chkRememberPassword.Checked = false;
                 }
 
-                cmbAuthentication.SelectedIndex = cmbAuthentication.FindString(CurrentConnection.Authentication.ToString());
+                SelectAuthenticationType(CurrentConnection.Authentication);
             }
         }
 
         //Handler of Authentication Method change
         private void cmbAuthentication_SelectedIndexChanged(object sender, EventArgs e)
         {
-            switch (cmbAuthentication.SelectedIndex)
+            switch (MapAuthenticationType())
             {
-                case 0: //Windows Authentication
+                case AuthenticationMethods.Windows: //Windows Authentication
                     cmbLogin.Text = SystemInformation.UserDomainName + @"\" + SystemInformation.UserName;
                     cmbLogin.Enabled = false;
                     txtPassword.Text = "";
@@ -205,10 +231,14 @@ namespace Suru.InsertGenerator.GeneradorUI
                     chkRememberPassword.Checked = false;
                     chkRememberPassword.Enabled = false;
                     break;
-                case 1: //SQL Server Authentication
+                case AuthenticationMethods.SqlServer: //SQL Server Authentication
                     cmbLogin.Enabled = true;
                     txtPassword.Enabled = true;
                     chkRememberPassword.Enabled = true;
+
+                    //Connection has changed. I need to update CurrentConnection.
+                    Predicate<Connection> Find_Connection = delegate(Connection c) { return c.HostName == cmbServerName.Text.Trim() && c.Authentication == MapAuthenticationType(); };
+                    CurrentConnection = lConnections.Find(Find_Connection);
 
                     if (CurrentConnection != null)
                     {
@@ -233,7 +263,61 @@ namespace Suru.InsertGenerator.GeneradorUI
         //Handler of Server change
         private void cmbServerName_SelectedIndexChanged(object sender, EventArgs e)
         {
+            //When server name changes, logins must be updated
+            List<Connection> lServer_Connections = null;
 
+            Predicate<Connection> Find_Connections = delegate(Connection c) { return c.HostName == cmbServerName.Text.Trim(); };
+
+            lServer_Connections = lConnections.FindAll(Find_Connections);
+
+            cmbLogin.Items.Clear();
+
+            CurrentConnection = null;
+
+            foreach (Connection c in lServer_Connections)
+            {
+                cmbLogin.Items.Add(c.UserName);
+
+                if (c.IsLastSucessfulLogin)
+                    CurrentConnection = c;
+            }
+
+            if (CurrentConnection == null && lServer_Connections.Count != 0)
+                CurrentConnection = lServer_Connections[0];
+
+            SelectAuthenticationType(CurrentConnection.Authentication);
+        }
+
+        /// <summary>
+        /// Maps the current authetication method that is present in authenticacion's comobox.
+        /// </summary>
+        /// <returns>Authentication currently selected</returns>
+        public AuthenticationMethods MapAuthenticationType()
+        {
+            if (cmbAuthentication.SelectedIndex == 0)
+                return AuthenticationMethods.Windows;
+            else
+                return AuthenticationMethods.SqlServer;
+        }
+
+        /// <summary>
+        /// Sets the authentication method with the value passed on
+        /// </summary>
+        /// <param name="am">Authentication method to be selected in combobox.</param>
+        public void SelectAuthenticationType(AuthenticationMethods am)
+        {
+            switch (am)
+            {
+                case AuthenticationMethods.SqlServer:
+                    cmbAuthentication.SelectedIndex = 1;
+                    break;
+                case AuthenticationMethods.Windows:
+                    cmbAuthentication.SelectedIndex = 0;
+                    break;
+                default:
+                    cmbAuthentication.SelectedIndex = 0;
+                    break;
+            }
         }
     }  
 }

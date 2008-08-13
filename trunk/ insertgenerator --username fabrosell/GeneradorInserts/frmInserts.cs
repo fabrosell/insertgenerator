@@ -11,11 +11,13 @@ namespace Suru.InsertGenerator.GeneradorUI
 {
     public partial class frmInserts : Form
     {
+        #region Variables
         private Connection DBConnection;
         private List<String> TableList = null;
         private const String CheckBoxColumnName = "[Selected]";
         private const String TableColumnName = "[Table]";
-        private frmConnectServer Parent;
+        private frmConnectServer OriginalParent;
+        #endregion
 
         /// <summary>
         /// Class' constructor.
@@ -25,11 +27,12 @@ namespace Suru.InsertGenerator.GeneradorUI
         {
             DBConnection = conn;
 
-            Parent = fParent;
+            OriginalParent = fParent;
 
             InitializeComponent();
         }
 
+        //Load Event Handler
         private void frmInserts_Load(object sender, EventArgs e)
         {
             this.Text = "Suru SQL Insert Generator - v." + Application.ProductVersion;            
@@ -122,7 +125,7 @@ namespace Suru.InsertGenerator.GeneradorUI
         //When form is closing, parent and current form must be disposed
         private void frmInserts_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Parent.Dispose();
+            OriginalParent.Dispose();
             this.Dispose();
         }
     }
