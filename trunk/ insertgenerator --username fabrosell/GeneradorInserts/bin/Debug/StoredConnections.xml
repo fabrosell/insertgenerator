@@ -1,30 +1,9 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Connections>
-	<Connection>
-		<Host>192.168.253.138</Host>
-		<User></User>
-		<Pass></Pass>
-		<Authentication>Windows</Authentication>
-		<DataBase>Recaudaciones</DataBase>
-		<IsLastSuccessful>True</IsLastSuccessful>
-		<PasswordSaved>False</PasswordSaved>
-	</Connection>
-	<Connection>
-		<Host>192.168.253.138</Host>
-		<User>test</User>
-		<Pass></Pass>
-		<Authentication>SqlServer</Authentication>
-		<DataBase>Recaudaciones</DataBase>
-		<IsLastSuccessful>False</IsLastSuccessful>
-		<PasswordSaved>True</PasswordSaved>
-	</Connection>
-	<Connection>
-		<Host>192.168.100.2</Host>
-		<User>testQA</User>
-		<Pass>qa2008</Pass>
-		<Authentication>SqlServer</Authentication>
-		<DataBase>Recaudaciones_BD0</DataBase>
-		<IsLastSuccessful>False</IsLastSuccessful>
-		<PasswordSaved>True</PasswordSaved>
-	</Connection>
+<Connection><Host>192.168.253.138</Host><User></User><Pass></Pass><Authentication>Windows</Authentication><DataBase>master</DataBase><IsLastSuccessful>True</IsLastSuccessful><PasswordSaved>False</PasswordSaved></Connection>
+<Connection><Host>192.168.248.114</Host><User>sa</User><Pass></Pass><Authentication>SqlServer</Authentication><DataBase>master</DataBase><IsLastSuccessful>False</IsLastSuccessful><PasswordSaved>True</PasswordSaved></Connection>
+<Connection><Host>192.168.247.233</Host><User>sa</User><Pass>sasa</Pass><Authentication>SqlServer</Authentication><DataBase>master</DataBase><IsLastSuccessful>False</IsLastSuccessful><PasswordSaved>True</PasswordSaved></Connection>
+<Connection><Host>192.168.253.138</Host><User></User><Pass></Pass><Authentication>Windows</Authentication><DataBase>Recaudaciones</DataBase><IsLastSuccessful>False</IsLastSuccessful><PasswordSaved>False</PasswordSaved></Connection>
+<Connection><Host>192.168.253.138</Host><User>test</User><Pass></Pass><Authentication>SqlServer</Authentication><DataBase>Recaudaciones</DataBase><IsLastSuccessful>False</IsLastSuccessful><PasswordSaved>True</PasswordSaved></Connection>
+<Connection><Host>192.168.100.2</Host><User>testQA</User><Pass>qa2008</Pass><Authentication>SqlServer</Authentication><DataBase>Recaudaciones_BD0</DataBase><IsLastSuccessful>False</IsLastSuccessful><PasswordSaved>True</PasswordSaved></Connection>
 </Connections>

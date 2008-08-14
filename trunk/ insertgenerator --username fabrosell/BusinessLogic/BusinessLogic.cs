@@ -6,6 +6,7 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Configuration;
 using System.Xml;
+using Suru.Common.EncryptionLibrary;
 
 namespace Suru.InsertGenerator.BusinessLogic
 {
@@ -239,6 +240,7 @@ namespace Suru.InsertGenerator.BusinessLogic
             try
             {
                 StreamReader sr = new StreamReader(ConfigurationManager.AppSettings.Get("ConfigurationFile"));
+                StreamWriter sw = null;
                 String sXmlContent = null;
 
                 try
@@ -255,9 +257,6 @@ namespace Suru.InsertGenerator.BusinessLogic
                     sr.Close();   
                 }
 
-                //Rewrites the file
-                StreamWriter sw = new StreamWriter(ConfigurationManager.AppSettings.Get("ConfigurationFile"));
-
                 try
                 {
                     //For one connection, several logins may exists.            
@@ -272,7 +271,8 @@ namespace Suru.InsertGenerator.BusinessLogic
                     XmlNode tempNode;
                     Boolean NodeIsFound = false;
 
-                    String sConnection = null;
+                    StringBuilder sConnectionNodes = new StringBuilder();
+                    sConnectionNodes.Append("<?xml version=\"1.0\" encoding=\"utf-8\" ?>" + Environment.NewLine + "<Connections>" + Environment.NewLine);
 
                     String sUserName = "";
                     String sPassword = "";
@@ -284,15 +284,16 @@ namespace Suru.InsertGenerator.BusinessLogic
                         sPassword = _Password;
 
                     //It's always easier to rewrite the connection.
-                    sConnection = "<Connection>" +
-                                    "<Host>" + _HostName + "</Host>" +
-                                    "<User>" + sUserName + "</User>" +
-                                    "<Pass>" + sPassword + "</Pass>" +
-                                    "<Authentication>" + _Authentication.ToString() + "</Authentication>" +
-                                    "<DataBase>" + _Last_DataBase + "</DataBase>" +
-                                    "<IsLastSuccessful>True</IsLastSuccessful>" +
-                                    "<PasswordSaved>" + _SavePassword.ToString() + "<PasswordSaved>" +
-                                  "</Connection>";
+                    sConnectionNodes.Append( "<Connection>" + EncryptString(                                                    
+                                                "<Host>" + _HostName + "</Host>" +
+                                                "<User>" + sUserName + "</User>" +
+                                                "<Pass>" + sPassword + "</Pass>" +
+                                                "<Authentication>" + _Authentication.ToString() + "</Authentication>" +
+                                                "<DataBase>" + _Last_DataBase + "</DataBase>" +
+                                                "<IsLastSuccessful>True</IsLastSuccessful>" +
+                                                "<PasswordSaved>" + _SavePassword.ToString() + "</PasswordSaved>"
+                                                ) +
+                                              "</Connection>" + Environment.NewLine);
 
                     foreach (XmlNode xmlSavedConnection in xmlConnectionNodeList)
                     {
@@ -313,17 +314,22 @@ namespace Suru.InsertGenerator.BusinessLogic
                             }
                         }
 
+                        tempNode = xmlSavedConnection.SelectNodes("descendant::IsLastSuccessful")[0];
+                        tempNode.InnerText = "False";
+
                         //NodeIsFound = True --> I found the Node
                         if (!NodeIsFound)
-                        {
-                            sConnection += "<Connection>" + xmlSavedConnection.InnerText + "</Connection>";
-                        }
+                            sConnectionNodes.Append("<Connection>" + EncryptString(xmlSavedConnection.InnerXml.ToString()) + "</Connection>" + Environment.NewLine);
                     }
 
                     //The Node List is complete. It must be written to the connection file.
+                    sConnectionNodes.Append("</Connections>");
 
                     //Writes the file
-                    sw.Write(sConnection);
+                    //Rewrites the file
+                    sw = new StreamWriter(ConfigurationManager.AppSettings.Get("ConfigurationFile"));
+
+                    sw.Write(sConnectionNodes);
                 }
                 catch (Exception ex)
                 {
@@ -331,7 +337,8 @@ namespace Suru.InsertGenerator.BusinessLogic
                 }
                 finally
                 {
-                    sw.Close();
+                    if (sw != null)
+                        sw.Close();
                 }
             }
             catch (Exception ex)
@@ -432,6 +439,22 @@ namespace Suru.InsertGenerator.BusinessLogic
             }
 
             return TableList;
+        }
+
+        /// <summary>
+        /// This method Encrypts the String and Replace '<' and '>' with a different mark.
+        /// This is done because the file is saved as XML.
+        /// </summary>
+        /// <param name="sToEncript">String to encrypt.</param>
+        /// <returns>Encrypted String, with '<' and '>' replaced.</returns>
+        private String EncryptString(String sToEncript)
+        {            
+            return sToEncript;
+        }
+
+        private String DecryptString(String sEncripted)
+        {
+            return sEncripted;
         }
     }
 
