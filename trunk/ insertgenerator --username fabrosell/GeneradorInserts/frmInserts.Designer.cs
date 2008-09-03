@@ -32,11 +32,12 @@
             this.cmbDataBase = new System.Windows.Forms.ComboBox();
             this.lblDatabase = new System.Windows.Forms.Label();
             this.dgvTables = new System.Windows.Forms.DataGridView();
-            this.button1 = new System.Windows.Forms.Button();
+            this.btnGenerateInserts = new System.Windows.Forms.Button();
             this.chkSelectAll = new System.Windows.Forms.CheckBox();
             this.btnOptions = new System.Windows.Forms.Button();
             this.ssStateBar = new System.Windows.Forms.StatusStrip();
             this.tssServerName = new System.Windows.Forms.ToolStripStatusLabel();
+            this.tssArrowKey = new System.Windows.Forms.ToolStripStatusLabel();
             this.tssUserName = new System.Windows.Forms.ToolStripStatusLabel();
             this.tssErrorMessage = new System.Windows.Forms.ToolStripStatusLabel();
             this.btnChangeConnection = new System.Windows.Forms.Button();
@@ -73,17 +74,18 @@
             this.dgvTables.Location = new System.Drawing.Point(0, 87);
             this.dgvTables.Name = "dgvTables";
             this.dgvTables.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvTables.Size = new System.Drawing.Size(346, 313);
+            this.dgvTables.Size = new System.Drawing.Size(360, 313);
             this.dgvTables.TabIndex = 2;
             // 
-            // button1
+            // btnGenerateInserts
             // 
-            this.button1.Location = new System.Drawing.Point(90, 45);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(105, 23);
-            this.button1.TabIndex = 3;
-            this.button1.Text = "Generate Inserts";
-            this.button1.UseVisualStyleBackColor = true;
+            this.btnGenerateInserts.Location = new System.Drawing.Point(90, 45);
+            this.btnGenerateInserts.Name = "btnGenerateInserts";
+            this.btnGenerateInserts.Size = new System.Drawing.Size(105, 23);
+            this.btnGenerateInserts.TabIndex = 3;
+            this.btnGenerateInserts.Text = "Generate Inserts";
+            this.btnGenerateInserts.UseVisualStyleBackColor = true;
+            this.btnGenerateInserts.Click += new System.EventHandler(this.btnGenerateInserts_Click);
             // 
             // chkSelectAll
             // 
@@ -93,8 +95,8 @@
             this.chkSelectAll.Size = new System.Drawing.Size(70, 17);
             this.chkSelectAll.TabIndex = 4;
             this.chkSelectAll.Text = "Select All";
-            this.chkSelectAll.ThreeState = true;
             this.chkSelectAll.UseVisualStyleBackColor = true;
+            this.chkSelectAll.CheckedChanged += new System.EventHandler(this.chkSelectAll_CheckedChanged);
             // 
             // btnOptions
             // 
@@ -109,11 +111,12 @@
             // 
             this.ssStateBar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tssServerName,
+            this.tssArrowKey,
             this.tssUserName,
             this.tssErrorMessage});
             this.ssStateBar.Location = new System.Drawing.Point(0, 403);
             this.ssStateBar.Name = "ssStateBar";
-            this.ssStateBar.Size = new System.Drawing.Size(346, 22);
+            this.ssStateBar.Size = new System.Drawing.Size(360, 22);
             this.ssStateBar.TabIndex = 6;
             // 
             // tssServerName
@@ -121,6 +124,12 @@
             this.tssServerName.Name = "tssServerName";
             this.tssServerName.Size = new System.Drawing.Size(77, 17);
             this.tssServerName.Text = "[Server Name]";
+            // 
+            // tssArrowKey
+            // 
+            this.tssArrowKey.Name = "tssArrowKey";
+            this.tssArrowKey.Size = new System.Drawing.Size(15, 17);
+            this.tssArrowKey.Text = "[]";
             // 
             // tssUserName
             // 
@@ -147,12 +156,12 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(346, 425);
+            this.ClientSize = new System.Drawing.Size(360, 425);
             this.Controls.Add(this.btnChangeConnection);
             this.Controls.Add(this.ssStateBar);
             this.Controls.Add(this.btnOptions);
             this.Controls.Add(this.chkSelectAll);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.btnGenerateInserts);
             this.Controls.Add(this.dgvTables);
             this.Controls.Add(this.lblDatabase);
             this.Controls.Add(this.cmbDataBase);
@@ -174,7 +183,7 @@
         private System.Windows.Forms.ComboBox cmbDataBase;
         private System.Windows.Forms.Label lblDatabase;
         private System.Windows.Forms.DataGridView dgvTables;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button btnGenerateInserts;
         private System.Windows.Forms.CheckBox chkSelectAll;
         private System.Windows.Forms.Button btnOptions;
         private System.Windows.Forms.StatusStrip ssStateBar;
@@ -182,5 +191,6 @@
         private System.Windows.Forms.ToolStripStatusLabel tssUserName;
         private System.Windows.Forms.Button btnChangeConnection;
         private System.Windows.Forms.ToolStripStatusLabel tssErrorMessage;
+        private System.Windows.Forms.ToolStripStatusLabel tssArrowKey;
     }
 }

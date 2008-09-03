@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using Suru.InsertGenerator.BusinessLogic;
+using System.Security;
 
 namespace Suru.InsertGenerator.GeneradorUI
 {
@@ -99,11 +100,15 @@ namespace Suru.InsertGenerator.GeneradorUI
                 case AuthenticationMethods.SqlServer: //SQL Authentication
                     if (CurrentConnection == null)
                     {
-                        //Create a Connection object
-                        DBConnection = new Connection(txtPassword.Text.Trim());
+                        SecureString sPassword = new SecureString();
+                        foreach (Char c in txtPassword.Text.Trim())
+                            sPassword.AppendChar(c);
 
                         //Replace the password by the foobar message, so it can't be seen with passwords revealers
                         txtPassword.Text = FoobarMessage;
+
+                        //Create a Connection object
+                        DBConnection = new Connection(sPassword);
 
                         //Complete the other paramethers
                         DBConnection.HostName = cmbServerName.Text.Trim();

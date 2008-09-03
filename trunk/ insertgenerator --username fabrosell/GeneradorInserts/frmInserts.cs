@@ -35,7 +35,17 @@ namespace Suru.InsertGenerator.GeneradorUI
         //Load Event Handler
         private void frmInserts_Load(object sender, EventArgs e)
         {
-            this.Text = "Suru SQL Insert Generator - v." + Application.ProductVersion;            
+            this.Text = "Suru SQL Insert Generator - v." + Application.ProductVersion;
+
+            Load_Form();
+        }
+
+        /// <summary>
+        /// This method initializes the database / tables form
+        /// </summary>
+        private void Load_Form()
+        {
+            cmbDataBase.Items.Clear();
 
             //Load DataBases in ComboBox
             foreach (String s in DBConnection.DataBases)
@@ -45,6 +55,8 @@ namespace Suru.InsertGenerator.GeneradorUI
 
             //Load the database tables
             Load_DataBase_Tables();
+
+            UpdateForm();
         }
 
         /// <summary>
@@ -52,7 +64,16 @@ namespace Suru.InsertGenerator.GeneradorUI
         /// </summary>
         private void UpdateForm()
         {            
-            throw new Exception("This method has not been implemented.");
+            tssServerName.Text = DBConnection.HostName;
+
+            if (DBConnection.UserName == "")
+                tssUserName.Text = SystemInformation.UserName;
+            else
+                tssUserName.Text = DBConnection.UserName;
+
+            tssArrowKey.Text = "-->";
+
+            tssErrorMessage.Text = DBConnection.ErrorMessage;
         }
 
         /// <summary>
@@ -111,8 +132,10 @@ namespace Suru.InsertGenerator.GeneradorUI
             }
             else
             {
-                //TableList is null: user has not enough privileges or some error happened.
+                dgvTables.Rows.Clear();
+                UpdateForm();
             }
+            
         }
 
         //When the Selected Database changes, Table DataGrid must be reloaded.
@@ -127,6 +150,68 @@ namespace Suru.InsertGenerator.GeneradorUI
         {
             OriginalParent.Dispose();
             this.Dispose();
+        }
+
+        //Generate Insert Button Event Handler
+        private void btnGenerateInserts_Click(object sender, EventArgs e)
+        {
+            List<String> lTablesToGenerate = new List<String>();
+
+            //Getting checked rows from table
+            DataGridViewCheckBoxCell dchk;
+            foreach (DataGridViewRow dr in dgvTables.Rows)
+            {
+                dchk = (DataGridViewCheckBoxCell)dr.Cells[CheckBoxColumnName];
+
+                if ((Boolean)dchk.Value)
+                    lTablesToGenerate.Add((String)dr.Cells[TableColumnName].Value);
+            }
+
+            //You must select tables message.
+            if (lTablesToGenerate.Count == 0)
+            {
+                MessageBox.Show("You must select one or more tables to Generate Inserts", "No tables selected", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                dgvTables.Focus();
+                return;
+            }  
+          
+            //Generate the inserts
+
+            /*
+             *  Options to generation:
+             * 
+             *  Owns
+             *  - Posibility of generating inserts of correlated tables.
+             *  - Posibility of generating inserts of correlated and derived tables
+             *  - Posibility of mapping identity columns but not forcing identity insert (identities table-dependant).
+             *  - Generating with tables and data creation scripts
+             *  - Transactional creation script
+             *
+             *  Stolen ones from sp_GenerateInsert dude
+             *  - Change destination table name
+             *  - Including timestamp/rowversion insert statement
+             *  - Identity columns might be overriden or not (identity insert)
+             *  - Top rows
+             *  - Ommiting computed columns
+             *  - Ommit image columns
+             *  - Owner? (when you aren't)
+             *  - Filtering Rows with a clause.
+             *  - Include column list or not
+             *  - Exclude some columns
+             *  - Incluse some columns
+             */
+        }
+
+        //Select All Event Handler
+        private void chkSelectAll_CheckedChanged(object sender, EventArgs e)
+        {
+            DataGridViewCheckBoxCell dchk;
+
+            foreach (DataGridViewRow dr in dgvTables.Rows)
+            {
+                dchk = (DataGridViewCheckBoxCell)dr.Cells[CheckBoxColumnName];
+                dchk.Value = chkSelectAll.Checked;
+            }
         }
     }
 }

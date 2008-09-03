@@ -13,7 +13,7 @@ namespace Suru.Common.EncryptionLibrary
             // Create a new Rijndael object.
             Rijndael RijndaelAlg = Rijndael.Create();
 
-//            RijndaelAlg.cre
+            //RijndaelAlg.cre
 
             //RijndaelAlg.CreateEncryptor(Key, IV)
 

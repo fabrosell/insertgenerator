@@ -160,6 +160,7 @@
             this.Controls.Add(this.cmbLogin);
             this.Controls.Add(this.lblLogin);
             this.Controls.Add(this.lblServer);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.Name = "frmConnectServer";
             this.Text = "Connect to Server";

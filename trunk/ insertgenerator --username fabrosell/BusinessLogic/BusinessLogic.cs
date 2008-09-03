@@ -6,10 +6,15 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Configuration;
 using System.Xml;
+using System.Security;
+using System.Runtime.InteropServices;
 using Suru.Common.EncryptionLibrary;
 
 namespace Suru.InsertGenerator.BusinessLogic
 {
+    /// <summary>
+    /// Class modeling a database connection
+    /// </summary>
     public class Connection
     {
         #region Local Variables and Constants
@@ -17,7 +22,7 @@ namespace Suru.InsertGenerator.BusinessLogic
         //Defining and defaulting parameters
         private String _HostName = null;
         private String _UserName = null;
-        private String _Password = null;
+        private SecureString _Password = null;
         private AuthenticationMethods _Authentication = AuthenticationMethods.Windows;
         private String _ErrorMessage = null;
         private List<String> _DataBases = null;
@@ -100,7 +105,7 @@ namespace Suru.InsertGenerator.BusinessLogic
         /// Class constructor, for SQL Authentication Method.
         /// </summary>
         /// <param name="Password">Connection's password.</param>
-        public Connection(String Password)
+        public Connection(SecureString Password)
         {
             _Password = Password;
             _Authentication = AuthenticationMethods.SqlServer;
@@ -162,8 +167,14 @@ namespace Suru.InsertGenerator.BusinessLogic
                         xmlTempNodes = xmlConnection.SelectNodes("descendant::User");
                         c.UserName = xmlTempNodes[0].InnerText;
 
+                        //Processing password
                         xmlTempNodes = xmlConnection.SelectNodes("descendant::Pass");
-                        c._Password = xmlTempNodes[0].InnerText;
+
+                        if (xmlTempNodes[0].InnerText.Length != 0)
+                            c._Password = new SecureString();
+
+                        foreach (Char cPiece in xmlTempNodes[0].InnerText)
+                            c._Password.AppendChar(cPiece);
 
                         xmlTempNodes = xmlConnection.SelectNodes("descendant::Authentication");
 
@@ -281,7 +292,10 @@ namespace Suru.InsertGenerator.BusinessLogic
                         sUserName = _UserName;
 
                     if (_Password != null)
-                        sPassword = _Password;
+                    {
+                        IntPtr passwordBSTR = Marshal.SecureStringToBSTR(_Password);
+                        sPassword = Marshal.PtrToStringBSTR(passwordBSTR);
+                    }
 
                     //It's always easier to rewrite the connection.
                     sConnectionNodes.Append( "<Connection>" + EncryptString(                                                    
@@ -368,7 +382,17 @@ namespace Suru.InsertGenerator.BusinessLogic
                     ConnectionString = ConnectionString.Replace(ServerPrefix, _HostName);
                     ConnectionString = ConnectionString.Replace(DatabasePrefix, DefaultDatabase);
                     ConnectionString = ConnectionString.Replace(UserPrefix, _UserName);
-                    ConnectionString = ConnectionString.Replace(PasswordPrefix, _Password);
+
+                    String _InsecurePassword = null;
+                    if (_Password != null)
+                    {
+                        IntPtr passwordBSTR = Marshal.SecureStringToBSTR(_Password);
+                        _InsecurePassword = Marshal.PtrToStringBSTR(passwordBSTR);
+                    }
+                    else
+                        _InsecurePassword = "";
+
+                    ConnectionString = ConnectionString.Replace(PasswordPrefix, _InsecurePassword);
                     break;
                 default:
                     throw new Exception("Unknown authentication method.");
