@@ -180,25 +180,25 @@ namespace Suru.InsertGenerator.GeneradorUI
             /*
              *  Options to generation:
              * 
-             *  Owns
-             *  - Posibility of generating inserts of correlated tables.
-             *  - Posibility of generating inserts of correlated and derived tables
-             *  - Posibility of mapping identity columns but not forcing identity insert (identities table-dependant).
-             *  - Generating with tables and data creation scripts
-             *  - Transactional creation script
+             *  Basic Ones
+             *  -/ Posibility of generating inserts of correlated tables.
+             *  -/ Posibility of generating inserts of correlated and derived tables
+             *  -/ Posibility of mapping identity columns but not forcing identity insert (identities table-dependant).
+             *  -/ Generating with tables and data creation scripts
+             *  -/ Transactional creation script
+             *  -/ Identity columns might be overriden or not (identity insert)
              *
-             *  Stolen ones from sp_GenerateInsert dude
+             *  Future Addition
+             *  - Generate Test Script (so data can be deleted and inserting to test the script)
              *  - Change destination table name
              *  - Including timestamp/rowversion insert statement
-             *  - Identity columns might be overriden or not (identity insert)
              *  - Top rows
              *  - Ommiting computed columns
              *  - Ommit image columns
              *  - Owner? (when you aren't)
              *  - Filtering Rows with a clause.
-             *  - Include column list or not
              *  - Exclude some columns
-             *  - Incluse some columns
+             *  - Include some columns
              */
         }
 
@@ -212,6 +212,14 @@ namespace Suru.InsertGenerator.GeneradorUI
                 dchk = (DataGridViewCheckBoxCell)dr.Cells[CheckBoxColumnName];
                 dchk.Value = chkSelectAll.Checked;
             }
+        }
+
+        //Generating Options
+        private void btnOptions_Click(object sender, EventArgs e)
+        {
+            frmScriptOptions Dialog = new frmScriptOptions();
+
+            Dialog.ShowDialog();
         }
     }
 }

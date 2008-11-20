@@ -298,7 +298,7 @@ namespace Suru.InsertGenerator.BusinessLogic
                     }
 
                     //It's always easier to rewrite the connection.
-                    sConnectionNodes.Append( "<Connection>" + EncryptString(                                                    
+                    sConnectionNodes.Append( "<Connection>" + Encryption.Encrypt(                                                    
                                                 "<Host>" + _HostName + "</Host>" +
                                                 "<User>" + sUserName + "</User>" +
                                                 "<Pass>" + sPassword + "</Pass>" +
@@ -333,7 +333,7 @@ namespace Suru.InsertGenerator.BusinessLogic
 
                         //NodeIsFound = True --> I found the Node
                         if (!NodeIsFound)
-                            sConnectionNodes.Append("<Connection>" + EncryptString(xmlSavedConnection.InnerXml.ToString()) + "</Connection>" + Environment.NewLine);
+                            sConnectionNodes.Append("<Connection>" + Encryption.Encrypt(xmlSavedConnection.InnerXml.ToString()) + "</Connection>" + Environment.NewLine);
                     }
 
                     //The Node List is complete. It must be written to the connection file.
@@ -463,22 +463,6 @@ namespace Suru.InsertGenerator.BusinessLogic
             }
 
             return TableList;
-        }
-
-        /// <summary>
-        /// This method Encrypts the String and Replace '<' and '>' with a different mark.
-        /// This is done because the file is saved as XML.
-        /// </summary>
-        /// <param name="sToEncript">String to encrypt.</param>
-        /// <returns>Encrypted String, with '<' and '>' replaced.</returns>
-        private String EncryptString(String sToEncript)
-        {            
-            return sToEncript;
-        }
-
-        private String DecryptString(String sEncripted)
-        {
-            return sEncripted;
         }
     }
 

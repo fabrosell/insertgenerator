@@ -5,13 +5,13 @@ using System.Security.Cryptography;
 
 namespace Suru.Common.EncryptionLibrary
 {
-    public class EncryptionClass
+    public class Encryption
     {
-
+        //By the way, I don't encrypt anything
         public static String Encrypt(String sToEncript)
         {
             // Create a new Rijndael object.
-            Rijndael RijndaelAlg = Rijndael.Create();
+            //Rijndael RijndaelAlg = Rijndael.Create();
 
             //RijndaelAlg.cre
 
@@ -20,6 +20,7 @@ namespace Suru.Common.EncryptionLibrary
             return sToEncript;
         }
 
+        //By the way, I don't decrypts anything
         public static String Decrypt(String sEncripted)
         {
             return sEncripted;

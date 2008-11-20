@@ -5,3 +5,10 @@ C:\Documents and Settings\frosell\Mis documentos\Visual Studio 2005\Projects\Gen
 C:\Documents and Settings\frosell\Mis documentos\Visual Studio 2005\Projects\GeneradorInserts\BusinessLogic\obj\Debug\Suru.InsertGenerator.BusinessLogic.pdb
 C:\Documents and Settings\frosell\Mis documentos\Visual Studio 2005\Projects\GeneradorInserts\BusinessLogic\bin\Debug\Suru.Common.EncryptionLibrary.dll
 C:\Documents and Settings\frosell\Mis documentos\Visual Studio 2005\Projects\GeneradorInserts\BusinessLogic\bin\Debug\Suru.Common.EncryptionLibrary.pdb
+C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\GeneradorInserts\BusinessLogic\obj\Debug\ResolveAssemblyReference.cache
+C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\GeneradorInserts\BusinessLogic\obj\Debug\Suru.InsertGenerator.BusinessLogic.dll
+C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\GeneradorInserts\BusinessLogic\bin\Debug\Suru.InsertGenerator.BusinessLogic.dll
+C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\GeneradorInserts\BusinessLogic\bin\Debug\Suru.InsertGenerator.BusinessLogic.pdb
+C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\GeneradorInserts\BusinessLogic\bin\Debug\Suru.Common.EncryptionLibrary.dll
+C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\GeneradorInserts\BusinessLogic\bin\Debug\Suru.Common.EncryptionLibrary.pdb
+C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\GeneradorInserts\BusinessLogic\obj\Debug\Suru.InsertGenerator.BusinessLogic.pdb
