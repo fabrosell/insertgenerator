@@ -149,6 +149,7 @@ namespace Suru.InsertGenerator.GeneradorUI
             this.Name = "frmScriptOptions";
             this.ShowInTaskbar = false;
             this.Text = "Script Options";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmScriptOptions_FormClosing);
             this.gbIdentityOptions.ResumeLayout(false);
             this.gbIdentityOptions.PerformLayout();
             this.gbGeneralOptions.ResumeLayout(false);

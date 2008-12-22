@@ -7,6 +7,7 @@ using System.IO;
 using System.Configuration;
 using System.Xml;
 using System.Security;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Suru.Common.EncryptionLibrary;
 
@@ -466,5 +467,88 @@ namespace Suru.InsertGenerator.BusinessLogic
         }
     }
 
+    /// <summary>
+    /// Struct with Generation Options
+    /// </summary>
+    public struct GenerationOptions
+    {
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private Boolean _TransacionalScript;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private Boolean _IncludeTableScripts;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private Boolean _DerivedTableScript;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private Boolean _CorrelatedDataTablesScript;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private IdentityGenerationOptions _IdentityOptions;
+
+        #region Attribute Encapsulation
+
+        public Boolean TransacionalScript
+        {
+            get { return _TransacionalScript; }
+            set { _TransacionalScript = value; }
+        }
+
+        public Boolean IncludeTableScripts
+        {
+            get { return _IncludeTableScripts; }
+            set { _IncludeTableScripts = value; }
+        }
+
+        public Boolean DerivedTableScript
+        {
+            get { return _DerivedTableScript; }
+            set { _DerivedTableScript = value; }
+        }
+
+        public Boolean CorrelatedDataTablesScript
+        {
+            get { return _CorrelatedDataTablesScript; }
+            set { _CorrelatedDataTablesScript = value; }
+        }
+
+        public IdentityGenerationOptions IdentityOptions
+        {
+            get { return _IdentityOptions; }
+            set { _IdentityOptions = value; }
+        }
+
+        #endregion
+    }
+
     public enum AuthenticationMethods { SqlServer, Windows };
+
+    public enum IdentityGenerationOptions { IdentityInsert, InsertionDependant, OmitIdentityColumns };
+
+    /// <summary>
+    /// This class generates the Inserts' Scripts.
+    /// </summary>
+    public class SQLGeneration
+    {
+        private Connection _DBConnection;
+        private GenerationOptions _GenOpts;
+
+        /// <summary>
+        /// Class' constructor.
+        /// </summary>
+        /// <param name="DBConn">Database connection to use.</param>
+        /// <param name="GenOpts">Insert Generation Options</param>
+        public SQLGeneration(Connection DBConn, GenerationOptions GenOpts)
+        {
+            _DBConnection = DBConn;
+            _GenOpts = GenOpts;
+        }
+
+        /// <summary>
+        /// Generates the Inserts' Script.
+        /// </summary>
+        /// <param name="lTables">Tables to Generate Inserts.</param>
+        public void GenerateInserts(List<String> lTables)
+        {
+            //This list will hold all tables already generated.
+            List<String> GeneratedTables = new List<String>();
+        }
+    }
 }

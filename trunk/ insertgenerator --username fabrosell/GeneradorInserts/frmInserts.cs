@@ -12,11 +12,14 @@ namespace Suru.InsertGenerator.GeneradorUI
     public partial class frmInserts : Form
     {
         #region Variables
+
         private Connection DBConnection;
         private List<String> TableList = null;
         private const String CheckBoxColumnName = "[Selected]";
         private const String TableColumnName = "[Table]";
         private frmConnectServer OriginalParent;
+        public GenerationOptions gGenOptions = new GenerationOptions();
+
         #endregion
 
         /// <summary>
@@ -175,8 +178,6 @@ namespace Suru.InsertGenerator.GeneradorUI
                 return;
             }  
           
-            //Generate the inserts
-
             /*
              *  Options to generation:
              * 
@@ -200,6 +201,13 @@ namespace Suru.InsertGenerator.GeneradorUI
              *  - Exclude some columns
              *  - Include some columns
              */
+
+            //Generate the Inserts
+            SQLGeneration ScriptGenerator = new SQLGeneration(DBConnection, gGenOptions);
+
+            ScriptGenerator.GenerateInserts(lTablesToGenerate);
+
+            MessageBox.Show("Scripts Generated succesfully!", "End Generation", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         //Select All Event Handler
@@ -217,7 +225,7 @@ namespace Suru.InsertGenerator.GeneradorUI
         //Generating Options
         private void btnOptions_Click(object sender, EventArgs e)
         {
-            frmScriptOptions Dialog = new frmScriptOptions();
+            frmScriptOptions Dialog = new frmScriptOptions(this);
 
             Dialog.ShowDialog();
         }
