@@ -1,10 +1,12 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
+using System.Configuration;
 using Suru.InsertGenerator.BusinessLogic;
 
 namespace Suru.InsertGenerator.GeneradorUI
@@ -21,6 +23,8 @@ namespace Suru.InsertGenerator.GeneradorUI
         public GenerationOptions gGenOptions = new GenerationOptions();
 
         #endregion
+
+        #region Class Methods
 
         /// <summary>
         /// Class' constructor.
@@ -48,6 +52,12 @@ namespace Suru.InsertGenerator.GeneradorUI
         /// </summary>
         private void Load_Form()
         {
+            if (ConfigurationManager.AppSettings.Get("LastDirectoryUsed") == "")
+                lblOutputPath.Text = Application.StartupPath;
+            else
+                lblOutputPath.Text = ConfigurationManager.AppSettings.Get("LastDirectoryUsed");
+
+
             cmbDataBase.Items.Clear();
 
             //Load DataBases in ComboBox
@@ -59,7 +69,7 @@ namespace Suru.InsertGenerator.GeneradorUI
             //Load the database tables
             Load_DataBase_Tables();
 
-            UpdateForm();
+            UpdateForm();            
         }
 
         /// <summary>
@@ -138,8 +148,12 @@ namespace Suru.InsertGenerator.GeneradorUI
                 dgvTables.Rows.Clear();
                 UpdateForm();
             }
-            
+
         }
+
+        #endregion
+
+        #region Events
 
         //When the Selected Database changes, Table DataGrid must be reloaded.
         private void cmbDataBase_SelectedIndexChanged(object sender, EventArgs e)
@@ -203,7 +217,7 @@ namespace Suru.InsertGenerator.GeneradorUI
              */
 
             //Generate the Inserts
-            SQLGeneration ScriptGenerator = new SQLGeneration(DBConnection, gGenOptions);
+            SQLGeneration ScriptGenerator = new SQLGeneration(DBConnection, gGenOptions, lblOutputPath.Text);
 
             ScriptGenerator.GenerateInserts(lTablesToGenerate);
 
@@ -229,5 +243,14 @@ namespace Suru.InsertGenerator.GeneradorUI
 
             Dialog.ShowDialog();
         }
+
+        //Changing current Directory
+        private void btnChangePath_Click(object sender, EventArgs e)
+        {
+            if (fbdBrowseDirectory.ShowDialog() == DialogResult.OK)
+                lblOutputPath.Text = fbdBrowseDirectory.SelectedPath;
+        }
+
+        #endregion
     }
 }

@@ -152,4 +152,7 @@
         8fX38fX3
 </value>
   </data>
+  <metadata name="fbdBrowseDirectory.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>121, 17</value>
+  </metadata>
 </root>

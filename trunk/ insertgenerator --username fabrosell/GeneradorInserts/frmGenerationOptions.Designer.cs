@@ -54,6 +54,7 @@ namespace Suru.InsertGenerator.GeneradorUI
             // chkGenerateTables
             // 
             this.chkGenerateTables.AutoSize = true;
+            this.chkGenerateTables.Enabled = false;
             this.chkGenerateTables.Location = new System.Drawing.Point(6, 42);
             this.chkGenerateTables.Name = "chkGenerateTables";
             this.chkGenerateTables.Size = new System.Drawing.Size(177, 17);
@@ -95,6 +96,7 @@ namespace Suru.InsertGenerator.GeneradorUI
             // rbInsertionDependant
             // 
             this.rbInsertionDependant.AutoSize = true;
+            this.rbInsertionDependant.Enabled = false;
             this.rbInsertionDependant.Location = new System.Drawing.Point(6, 42);
             this.rbInsertionDependant.Name = "rbInsertionDependant";
             this.rbInsertionDependant.Size = new System.Drawing.Size(158, 17);

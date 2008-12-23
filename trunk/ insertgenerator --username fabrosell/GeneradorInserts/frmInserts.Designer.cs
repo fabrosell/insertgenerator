@@ -41,6 +41,10 @@
             this.tssUserName = new System.Windows.Forms.ToolStripStatusLabel();
             this.tssErrorMessage = new System.Windows.Forms.ToolStripStatusLabel();
             this.btnChangeConnection = new System.Windows.Forms.Button();
+            this.lblOutputPathLabel = new System.Windows.Forms.Label();
+            this.lblOutputPath = new System.Windows.Forms.Label();
+            this.btnChangePath = new System.Windows.Forms.Button();
+            this.fbdBrowseDirectory = new System.Windows.Forms.FolderBrowserDialog();
             ((System.ComponentModel.ISupportInitialize)(this.dgvTables)).BeginInit();
             this.ssStateBar.SuspendLayout();
             this.SuspendLayout();
@@ -49,7 +53,7 @@
             // 
             this.cmbDataBase.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbDataBase.FormattingEnabled = true;
-            this.cmbDataBase.Location = new System.Drawing.Point(75, 12);
+            this.cmbDataBase.Location = new System.Drawing.Point(89, 12);
             this.cmbDataBase.Name = "cmbDataBase";
             this.cmbDataBase.Size = new System.Drawing.Size(219, 21);
             this.cmbDataBase.TabIndex = 0;
@@ -62,7 +66,7 @@
             this.lblDatabase.Name = "lblDatabase";
             this.lblDatabase.Size = new System.Drawing.Size(54, 13);
             this.lblDatabase.TabIndex = 1;
-            this.lblDatabase.Text = "DataBase";
+            this.lblDatabase.Text = "&DataBase";
             // 
             // dgvTables
             // 
@@ -71,7 +75,7 @@
             this.dgvTables.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvTables.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvTables.Location = new System.Drawing.Point(0, 87);
+            this.dgvTables.Location = new System.Drawing.Point(0, 110);
             this.dgvTables.Name = "dgvTables";
             this.dgvTables.RowHeadersVisible = false;
             this.dgvTables.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
@@ -80,32 +84,32 @@
             // 
             // btnGenerateInserts
             // 
-            this.btnGenerateInserts.Location = new System.Drawing.Point(90, 45);
+            this.btnGenerateInserts.Location = new System.Drawing.Point(90, 81);
             this.btnGenerateInserts.Name = "btnGenerateInserts";
             this.btnGenerateInserts.Size = new System.Drawing.Size(105, 23);
             this.btnGenerateInserts.TabIndex = 3;
-            this.btnGenerateInserts.Text = "Generate Inserts";
+            this.btnGenerateInserts.Text = "&Generate Inserts";
             this.btnGenerateInserts.UseVisualStyleBackColor = true;
             this.btnGenerateInserts.Click += new System.EventHandler(this.btnGenerateInserts_Click);
             // 
             // chkSelectAll
             // 
             this.chkSelectAll.AutoSize = true;
-            this.chkSelectAll.Location = new System.Drawing.Point(12, 49);
+            this.chkSelectAll.Location = new System.Drawing.Point(12, 85);
             this.chkSelectAll.Name = "chkSelectAll";
             this.chkSelectAll.Size = new System.Drawing.Size(70, 17);
             this.chkSelectAll.TabIndex = 4;
-            this.chkSelectAll.Text = "Select All";
+            this.chkSelectAll.Text = "Select &All";
             this.chkSelectAll.UseVisualStyleBackColor = true;
             this.chkSelectAll.CheckedChanged += new System.EventHandler(this.chkSelectAll_CheckedChanged);
             // 
             // btnOptions
             // 
-            this.btnOptions.Location = new System.Drawing.Point(201, 45);
+            this.btnOptions.Location = new System.Drawing.Point(201, 81);
             this.btnOptions.Name = "btnOptions";
             this.btnOptions.Size = new System.Drawing.Size(108, 23);
             this.btnOptions.TabIndex = 5;
-            this.btnOptions.Text = "Options >>";
+            this.btnOptions.Text = "&Options >>";
             this.btnOptions.UseVisualStyleBackColor = true;
             this.btnOptions.Click += new System.EventHandler(this.btnOptions_Click);
             // 
@@ -116,7 +120,7 @@
             this.tssArrowKey,
             this.tssUserName,
             this.tssErrorMessage});
-            this.ssStateBar.Location = new System.Drawing.Point(0, 403);
+            this.ssStateBar.Location = new System.Drawing.Point(0, 426);
             this.ssStateBar.Name = "ssStateBar";
             this.ssStateBar.Size = new System.Drawing.Size(360, 22);
             this.ssStateBar.TabIndex = 6;
@@ -148,17 +152,50 @@
             // btnChangeConnection
             // 
             this.btnChangeConnection.Image = ((System.Drawing.Image)(resources.GetObject("btnChangeConnection.Image")));
-            this.btnChangeConnection.Location = new System.Drawing.Point(300, 12);
+            this.btnChangeConnection.Location = new System.Drawing.Point(314, 12);
             this.btnChangeConnection.Name = "btnChangeConnection";
             this.btnChangeConnection.Size = new System.Drawing.Size(34, 23);
             this.btnChangeConnection.TabIndex = 7;
             this.btnChangeConnection.UseVisualStyleBackColor = true;
             // 
+            // lblOutputPathLabel
+            // 
+            this.lblOutputPathLabel.AutoSize = true;
+            this.lblOutputPathLabel.Location = new System.Drawing.Point(12, 47);
+            this.lblOutputPathLabel.Name = "lblOutputPathLabel";
+            this.lblOutputPathLabel.Size = new System.Drawing.Size(64, 13);
+            this.lblOutputPathLabel.TabIndex = 8;
+            this.lblOutputPathLabel.Text = "Output Path";
+            // 
+            // lblOutputPath
+            // 
+            this.lblOutputPath.AutoSize = true;
+            this.lblOutputPath.Location = new System.Drawing.Point(87, 47);
+            this.lblOutputPath.Name = "lblOutputPath";
+            this.lblOutputPath.Size = new System.Drawing.Size(34, 13);
+            this.lblOutputPath.TabIndex = 9;
+            this.lblOutputPath.Text = "[path]";
+            // 
+            // btnChangePath
+            // 
+            this.btnChangePath.FlatAppearance.BorderSize = 0;
+            this.btnChangePath.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnChangePath.Location = new System.Drawing.Point(314, 47);
+            this.btnChangePath.Name = "btnChangePath";
+            this.btnChangePath.Size = new System.Drawing.Size(34, 23);
+            this.btnChangePath.TabIndex = 10;
+            this.btnChangePath.Text = "&...";
+            this.btnChangePath.UseVisualStyleBackColor = true;
+            this.btnChangePath.Click += new System.EventHandler(this.btnChangePath_Click);
+            // 
             // frmInserts
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(360, 425);
+            this.ClientSize = new System.Drawing.Size(360, 448);
+            this.Controls.Add(this.btnChangePath);
+            this.Controls.Add(this.lblOutputPath);
+            this.Controls.Add(this.lblOutputPathLabel);
             this.Controls.Add(this.btnChangeConnection);
             this.Controls.Add(this.ssStateBar);
             this.Controls.Add(this.btnOptions);
@@ -194,5 +231,9 @@
         private System.Windows.Forms.Button btnChangeConnection;
         private System.Windows.Forms.ToolStripStatusLabel tssErrorMessage;
         private System.Windows.Forms.ToolStripStatusLabel tssArrowKey;
+        private System.Windows.Forms.Label lblOutputPathLabel;
+        private System.Windows.Forms.Label lblOutputPath;
+        private System.Windows.Forms.Button btnChangePath;
+        private System.Windows.Forms.FolderBrowserDialog fbdBrowseDirectory;
     }
 }

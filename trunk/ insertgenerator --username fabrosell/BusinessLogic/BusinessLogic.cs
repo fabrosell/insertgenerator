@@ -465,6 +465,140 @@ namespace Suru.InsertGenerator.BusinessLogic
 
             return TableList;
         }
+        
+        /// <summary>
+        /// Gets the table ID for the specified Table.
+        /// </summary>
+        /// <param name="TableName">A Valid Table</param>
+        /// <returns>ID table (sysobjects data)</returns>
+        public Int64 GetTableID(String TableName)
+        {
+            Int64 TableID = -1;
+
+            try
+            {
+                using (SqlConnection sqlConn = new SqlConnection(ConnectionString))
+                {
+                    sqlConn.Open();
+
+                    SqlCommand sqlCommand = new SqlCommand("Use " + _Last_DataBase + "; Select IsNull(ID, -1) As ID From SysObjects Where Name = '" + TableName + "';");
+                    sqlCommand.Connection = sqlConn;
+
+                    SqlDataReader dr = sqlCommand.ExecuteReader();                    
+
+                    //Read the Table ID.
+                    if (dr.Read())
+                        TableID = Int64.Parse(dr["ID"].ToString());
+
+                    dr.Close();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                //Connection Fails
+                _ErrorMessage = ex.Message;
+            }
+
+            return TableID;
+        }
+
+        /// <summary>
+        /// Returns the table's columns.
+        /// </summary>
+        /// <param name="ID">Table ID.</param>
+        /// <returns>List of Column objects</returns>
+        public List<Columns> GetTableColumns(Int64 ID)
+        {
+            List<Columns> lTableColumns = new List<Columns>();
+            Columns Column;
+
+            try
+            {
+                using (SqlConnection sqlConn = new SqlConnection(ConnectionString))
+                {
+                    sqlConn.Open();
+
+                    SqlCommand sqlCommand = new SqlCommand("Use " + _Last_DataBase + "; Select C.name as ColumnName, T.name as TypeName, C.iscomputed As IsComputed From SysColumns C Left Join SysTypes T On C.xtype = T.xusertype Where id = " + ID + " Order By colorder;");
+
+                    sqlCommand.Connection = sqlConn;
+
+                    SqlDataReader dr = sqlCommand.ExecuteReader();
+
+                    //Process each column list
+                    while (dr.Read())
+                    {
+                        Column = new Columns();
+
+                        Column.Name = dr["ColumnName"].ToString();
+                        Column.Type = dr["TypeName"].ToString();
+                        if (Int32.Parse(dr["IsComputed"].ToString()) == 0)
+                            Column.IsCalculated = false;
+                        else
+                            Column.IsCalculated = true;
+
+                        lTableColumns.Add(Column);
+                    }
+
+                    dr.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                //Connection Fails
+                _ErrorMessage = ex.Message;
+            }
+
+            return lTableColumns;
+        }
+
+        /// <summary>
+        /// Get table's data.
+        /// </summary>
+        /// <param name="lTableColumns">Table's columns.</param>
+        /// <param name="SelectStatement">Table's select statement.</param>
+        /// <returns>The same column list passed as parameter, with data loaded on it.</returns>
+        public List<Columns> GetTableData(List<Columns> lTableColumns, String SelectStatement)
+        {
+            try
+            {
+                using (SqlConnection sqlConn = new SqlConnection(ConnectionString))
+                {
+                    sqlConn.Open();
+
+                    SqlCommand sqlCommand = new SqlCommand("Use " + _Last_DataBase + ";" + SelectStatement);
+
+                    sqlCommand.Connection = sqlConn;
+
+                    SqlDataReader dr = sqlCommand.ExecuteReader();
+
+                    Columns c;
+
+                    //Process each column list
+                    while (dr.Read())
+                    {
+                        for (Int32 i = 0; i < lTableColumns.Count; i++)
+                        {
+                            c = lTableColumns[i];
+
+                            if (c.Data == null)
+                                c.Data = new List<String>();
+
+                            c.Data.Add(dr[c.Name].ToString());
+                        }
+                    }
+
+                    dr.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                //Connection Fails
+                _ErrorMessage = ex.Message;
+            }
+
+            return lTableColumns;
+        }
     }
 
     /// <summary>
@@ -522,6 +656,51 @@ namespace Suru.InsertGenerator.BusinessLogic
 
     public enum IdentityGenerationOptions { IdentityInsert, InsertionDependant, OmitIdentityColumns };
 
+    public enum DataTypes { Integers, Decimals, Binarys, Strings, SpecificTypes, Ignored, NotIncluded, NotSupported };
+
+    /// <summary>
+    /// This class will hold all Columns' data relevant to generation.
+    /// </summary>
+    public struct Columns
+    {
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private String _Name;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private String _Type;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private Boolean _IsCalculated;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private List<String> _Data;
+
+        #region Attribute Encapsulation
+
+        public String Name
+        {
+            get { return _Name; }
+            set { _Name = value; }
+        }
+
+        public String Type
+        {
+            get { return _Type; }
+            set { _Type = value; }
+        }
+
+        public Boolean IsCalculated
+        {
+            get { return _IsCalculated; }
+            set { _IsCalculated = value; }
+        }
+
+        public List<String> Data
+        {
+            get { return _Data; }
+            set { _Data = value; }
+        }
+
+        #endregion
+    }
+
     /// <summary>
     /// This class generates the Inserts' Scripts.
     /// </summary>
@@ -529,16 +708,66 @@ namespace Suru.InsertGenerator.BusinessLogic
     {
         private Connection _DBConnection;
         private GenerationOptions _GenOpts;
+        private String _OutputPath;
+        private Dictionary<String, DataTypes> dDataTypes = null;
 
         /// <summary>
         /// Class' constructor.
         /// </summary>
         /// <param name="DBConn">Database connection to use.</param>
         /// <param name="GenOpts">Insert Generation Options</param>
-        public SQLGeneration(Connection DBConn, GenerationOptions GenOpts)
+        public SQLGeneration(Connection DBConn, GenerationOptions GenOpts, String OutputPath)
         {
             _DBConnection = DBConn;
             _GenOpts = GenOpts;
+            _OutputPath = OutputPath;
+
+            //Load the Data types
+            dDataTypes = new Dictionary<String, DataTypes>();
+
+            dDataTypes.Add("bigint", DataTypes.Integers);
+            dDataTypes.Add("int", DataTypes.Integers);
+            dDataTypes.Add("smallint", DataTypes.Integers);
+            dDataTypes.Add("tinyint", DataTypes.Integers);
+
+            //Data Type Not Supported Yet
+            //dDataTypes.Add("binary", DataTypes.Binarys);
+            dDataTypes.Add("binary", DataTypes.NotSupported);
+
+            //Data Type Not Supported Yet
+            //dDataTypes.Add("varbinary", DataTypes.Binarys);
+            dDataTypes.Add("varbinary", DataTypes.NotSupported);
+
+            //Data Type Not Supported Yet
+            //dDataTypes.Add("image", DataTypes.Binarys);
+            dDataTypes.Add("image", DataTypes.NotSupported);
+
+            dDataTypes.Add("char", DataTypes.Strings);
+            dDataTypes.Add("nchar", DataTypes.Strings);
+            dDataTypes.Add("ntext", DataTypes.Strings);
+            dDataTypes.Add("nvarchar", DataTypes.Strings);
+            dDataTypes.Add("text", DataTypes.Strings);
+            dDataTypes.Add("varchar", DataTypes.Strings);
+
+            dDataTypes.Add("xml", DataTypes.SpecificTypes);
+            dDataTypes.Add("bit", DataTypes.SpecificTypes);
+            dDataTypes.Add("datetime", DataTypes.SpecificTypes);
+            dDataTypes.Add("smalldatetime", DataTypes.SpecificTypes);
+
+            dDataTypes.Add("decimal", DataTypes.Decimals);
+            dDataTypes.Add("float", DataTypes.Decimals);
+            dDataTypes.Add("money", DataTypes.Decimals);
+            dDataTypes.Add("numeric", DataTypes.Decimals);
+            dDataTypes.Add("real", DataTypes.Decimals);
+            dDataTypes.Add("smallmoney", DataTypes.Decimals);
+
+            dDataTypes.Add("timestamp", DataTypes.NotIncluded);
+
+            dDataTypes.Add("uniqueidentifier", DataTypes.NotSupported);
+            dDataTypes.Add("sql_variant", DataTypes.NotSupported);
+
+            dDataTypes.Add("sysname", DataTypes.Ignored);
+
         }
 
         /// <summary>
@@ -547,8 +776,78 @@ namespace Suru.InsertGenerator.BusinessLogic
         /// <param name="lTables">Tables to Generate Inserts.</param>
         public void GenerateInserts(List<String> lTables)
         {
+            Int64 TableID;
+            List<Columns> TableColumns;
+
             //This list will hold all tables already generated.
             List<String> GeneratedTables = new List<String>();
+
+            //Integers --> These types don't need any special consideration on insert clause.
+            //Decimals --> Care must be taken when generating insert (remember decimal dot).
+            //Binarys  --> Binary types. Don't know how to handle them now.
+            //Strings  --> These types must have "'" enclosing his values.
+            //SpecificTypes --> Types which must have a 'Convert' clause and values must be enclosed with "'"
+            //Ignored       --> These types are not included on inserts.
+            //NotIncluded   --> These types are not included on inserts, because it's impossible to insert them.
+            //NotSupported  --> These types are not supported yet. An exception must be thrown.
+
+            foreach (String TableName in lTables)
+            {
+                TableID = _DBConnection.GetTableID(TableName);
+
+                TableColumns = _DBConnection.GetTableColumns(TableID);
+
+                TableColumns = _DBConnection.GetTableData(TableColumns, GenerateHeaderSentence(TableColumns, TableName, false));
+
+                //Now I have table data...
+            }
+        }
+
+        /// <summary>
+        /// This method generates the first part of the Insert sentence (Insert Into Table( columns...) Values (
+        /// </summary>
+        /// <param name="lColumns">List of table's columns.</param>
+        /// <param name="TableName">Table's name.</param>
+        /// <param name="bIsInsert">If true, generate Insert statement. Otherwise, generate select sentence.</param>
+        /// <returns>Insert sentence (first part).</returns>
+        private String GenerateHeaderSentence(List<Columns> lColumns, String TableName, Boolean bIsInsert)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            if (bIsInsert)
+            {
+                sb.Append("Insert Into ");
+                sb.Append(TableName);
+                sb.Append("(");
+            }
+            else
+                sb.Append("Select ");
+
+            foreach (Columns c in lColumns)
+            {             
+                if (dDataTypes[c.Type] != DataTypes.NotSupported)
+                    throw new ApplicationException("Table " + TableName + " has a column of Data Type " + c.Type + ", which is not supported currently by application");
+
+                if (dDataTypes[c.Type] != DataTypes.NotIncluded && dDataTypes[c.Type] != DataTypes.Ignored)
+                {
+                    sb.Append(c.Name);
+                    sb.Append(",");
+                }
+            }
+
+            //Remove the last comma separator
+            sb.Remove(sb.Length - 1, 1);
+
+            if (bIsInsert)
+                sb.Append(") Values (");
+            else
+            {
+                sb.Append(" From ");
+                sb.Append(TableName);
+                sb.Append(";");
+            }
+
+            return sb.ToString();
         }
     }
 }
