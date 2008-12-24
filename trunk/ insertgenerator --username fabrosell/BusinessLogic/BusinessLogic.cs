@@ -519,11 +519,12 @@ namespace Suru.InsertGenerator.BusinessLogic
                 {
                     sqlConn.Open();
 
-                    SqlCommand sqlCommand = new SqlCommand("Use " + _Last_DataBase + "; Select C.name as ColumnName, T.name as TypeName, C.iscomputed As IsComputed From SysColumns C Left Join SysTypes T On C.xtype = T.xusertype Where id = " + ID + " Order By colorder;");
+                    SqlCommand sqlCommand = new SqlCommand("Use " + _Last_DataBase + "; Select C.name as ColumnName, T.name as TypeName, C.iscomputed As IsComputed, C.status As Status From SysColumns C Left Join SysTypes T On C.xtype = T.xusertype Where id = " + ID + " Order By colorder;");
 
                     sqlCommand.Connection = sqlConn;
 
                     SqlDataReader dr = sqlCommand.ExecuteReader();
+                    Int32 Status;
 
                     //Process each column list
                     while (dr.Read())
@@ -536,6 +537,36 @@ namespace Suru.InsertGenerator.BusinessLogic
                             Column.IsCalculated = false;
                         else
                             Column.IsCalculated = true;
+
+                        Status = Int32.Parse(dr["Status"].ToString());
+
+
+                        //Information taken out from http://msdn.microsoft.com/en-us/library/aa260398(SQL.80).aspx
+
+                        //Bitmap status: 128 --> Column is identity type
+                        if (Status >= 128)
+                        {
+                            Column.IdentityColumn = true;
+                            Status -= 128;
+                        }
+
+                        //Bitmap status: 64 --> Column is output parameter.
+                        if (Status >= 64)
+                        {
+                            Column.OutputParameter = true;
+                            Status -= 64;
+                        }
+
+                        //Bitmap status: 16 --> Column has Ansi Padding on.
+                        if (Status >= 16)
+                        {
+                            Column.AnsiPaddingOn = true;
+                            Status -= 16;
+                        }
+
+                        //Bitmap status: 8 --> Column allow nulls.
+                        if (Status >= 8)
+                            Column.AllowNulls = true;
 
                         lTableColumns.Add(Column);
                     }
@@ -584,7 +615,10 @@ namespace Suru.InsertGenerator.BusinessLogic
                             if (c.Data == null)
                                 c.Data = new List<String>();
 
-                            c.Data.Add(dr[c.Name].ToString());
+                            if (dr[c.Name] == DBNull.Value)
+                                c.Data.Add(null);
+                            else
+                                c.Data.Add(dr[c.Name].ToString().Replace("'", "''"));
                         }
                     }
 
@@ -658,10 +692,12 @@ namespace Suru.InsertGenerator.BusinessLogic
 
     public enum DataTypes { Integers, Decimals, Binarys, Strings, SpecificTypes, Ignored, NotIncluded, NotSupported };
 
+    public enum ScriptTypes { TableScript, InsertScript };
+
     /// <summary>
     /// This class will hold all Columns' data relevant to generation.
     /// </summary>
-    public struct Columns
+    public class Columns
     {
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private String _Name;
@@ -671,6 +707,14 @@ namespace Suru.InsertGenerator.BusinessLogic
         private Boolean _IsCalculated;
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private List<String> _Data;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private Boolean _AllowNulls;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private Boolean _AnsiPaddingOn;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private Boolean _OutputParameter;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private Boolean _IdentityColumn;
 
         #region Attribute Encapsulation
 
@@ -698,7 +742,39 @@ namespace Suru.InsertGenerator.BusinessLogic
             set { _Data = value; }
         }
 
+        public Boolean AllowNulls
+        {
+            get { return _AllowNulls; }
+            set { _AllowNulls = value; }
+        }
+
+        public Boolean AnsiPaddingOn
+        {
+            get { return _AnsiPaddingOn; }
+            set { _AnsiPaddingOn = value; }
+        }
+
+        public Boolean OutputParameter
+        {
+            get { return _OutputParameter; }
+            set { _OutputParameter = value; }
+        }
+
+        public Boolean IdentityColumn
+        {
+            get { return _IdentityColumn; }
+            set { _IdentityColumn = value; }
+        }
+
         #endregion
+
+        public Columns()
+        {
+            _AllowNulls = false;
+            _AnsiPaddingOn = false;
+            _OutputParameter = false;
+            _IdentityColumn = false;
+        }
     }
 
     /// <summary>
@@ -710,6 +786,7 @@ namespace Suru.InsertGenerator.BusinessLogic
         private GenerationOptions _GenOpts;
         private String _OutputPath;
         private Dictionary<String, DataTypes> dDataTypes = null;
+        private Int32 _Script_Number = 1;
 
         /// <summary>
         /// Class' constructor.
@@ -791,16 +868,80 @@ namespace Suru.InsertGenerator.BusinessLogic
             //NotIncluded   --> These types are not included on inserts, because it's impossible to insert them.
             //NotSupported  --> These types are not supported yet. An exception must be thrown.
 
+            StringBuilder sb;
+            String Header;
+            StreamWriter sw_insert = new StreamWriter(Path.Combine(_OutputPath, GenerateFileName(ScriptTypes.InsertScript)));
+            sw_insert.AutoFlush = true;
+
             foreach (String TableName in lTables)
             {
                 TableID = _DBConnection.GetTableID(TableName);
 
                 TableColumns = _DBConnection.GetTableColumns(TableID);
 
-                TableColumns = _DBConnection.GetTableData(TableColumns, GenerateHeaderSentence(TableColumns, TableName, false));
+                Header = GenerateHeaderSentence(TableColumns, TableName, true);
 
-                //Now I have table data...
+                TableColumns = _DBConnection.GetTableData(TableColumns, GenerateHeaderSentence(TableColumns, TableName, false));
+                
+                //All rows...
+                for (Int32 i = 0; i < TableColumns[0].Data.Count; i++)
+                {
+                    sb = new StringBuilder();
+                    sb.Append(Header);
+
+                    foreach (Columns c in TableColumns)
+                    {
+                        if (c.Data[i] == null)
+                            sb.Append("NULL");
+                        else
+                        {                            
+                            switch (dDataTypes[c.Type])
+                            {
+                                case DataTypes.Binarys:
+                                    //I don't know how to process them.
+                                    break;
+                                case DataTypes.Decimals:
+                                    sb.Append(c.Data[i].Replace(',', '.'));
+                                    break;
+                                case DataTypes.Ignored:
+                                    //Nothing to append.
+                                    break;
+                                case DataTypes.Integers:
+                                    sb.Append(c.Data[i]);
+                                    break;
+                                case DataTypes.NotIncluded:
+                                    //Nothing to append
+                                    break;
+                                case DataTypes.NotSupported:
+                                    throw new ApplicationException("The data type " + c.Type + " is not supported.");
+                                    break;
+                                case DataTypes.SpecificTypes:
+                                    sb.Append("Convert(");
+                                    sb.Append(c.Type);
+                                    sb.Append(", '");
+                                    sb.Append(c.Data[i]);
+                                    sb.Append("')");
+                                    break;
+                                case DataTypes.Strings:
+                                    sb.Append("'");
+                                    sb.Append(c.Data[i]);
+                                    sb.Append("'");
+                                    break;
+                            }
+                        }
+
+                        sb.Append(",");
+                    }
+
+                    sb.Remove(sb.Length - 1, 1);
+                    sb.Append(");");
+
+                    //Now I have the insertion string. I should write it to a text file.
+                    sw_insert.WriteLine(sb.ToString());
+                }                
             }
+
+            sw_insert.Close();
         }
 
         /// <summary>
@@ -825,7 +966,7 @@ namespace Suru.InsertGenerator.BusinessLogic
 
             foreach (Columns c in lColumns)
             {             
-                if (dDataTypes[c.Type] != DataTypes.NotSupported)
+                if (dDataTypes[c.Type] == DataTypes.NotSupported)
                     throw new ApplicationException("Table " + TableName + " has a column of Data Type " + c.Type + ", which is not supported currently by application");
 
                 if (dDataTypes[c.Type] != DataTypes.NotIncluded && dDataTypes[c.Type] != DataTypes.Ignored)
@@ -848,6 +989,35 @@ namespace Suru.InsertGenerator.BusinessLogic
             }
 
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Generates the Script File name, according with app.config snippets.
+        /// </summary>
+        /// <param name="Type">Type of script generated. Currently, only table creation and insert creations are available.</param>
+        /// <returns>File name to use.</returns>
+        private String GenerateFileName(ScriptTypes Type)
+        {
+            String CrudeName = "#XX#_No_File_Name.sql";
+
+            if (Type == ScriptTypes.InsertScript)
+                CrudeName = ConfigurationManager.AppSettings.Get("PoblateTablesSnippet");
+
+            if (Type == ScriptTypes.TableScript)
+                CrudeName = ConfigurationManager.AppSettings.Get("CreateTableSnippet");
+
+            StringBuilder sb = new StringBuilder();
+            sb.Append(CrudeName);
+
+            //Replace the #DB# snippet
+            sb.Replace("#DB#", _DBConnection.Last_DataBase);
+
+            //Replace the #XX# snippet
+            sb.Replace("#XX#", _Script_Number.ToString("00"));
+
+            _Script_Number++;
+
+            return sb.ToString();            
         }
     }
 }
