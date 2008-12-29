@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
+using Suru.Common.EncryptionLibrary;
 using Suru.InsertGenerator.BusinessLogic;
 using System.Security;
 
@@ -12,27 +13,23 @@ namespace Suru.InsertGenerator.GeneradorUI
 {
     public partial class frmConnectServer : Form
     {
+        #region Atributtes
+
         public String FoobarMessage = "[reveal-proof]";                                       
         private Connection DBConnection;
         List<Connection> lConnections = null;        
         Connection CurrentConnection = null;
 
-        public frmConnectServer()
-        {
-            InitializeComponent();
-        }
+        #endregion
 
-        private void btnCancel_Click(object sender, EventArgs e)
-        {
-            this.Dispose();
-        }
+        #region Class Methods
 
         /// <summary>
         /// This method loads the Authentications' combobox.
         /// </summary>
         private void Load_AuthenticationMethods()
         {
-            cmbAuthentication.Items.Clear();            
+            cmbAuthentication.Items.Clear();
 
             cmbAuthentication.Items.Add("Windows Authentication");
             cmbAuthentication.Items.Add("SQL Server Authentication");
@@ -52,6 +49,107 @@ namespace Suru.InsertGenerator.GeneradorUI
             else
                 //Windows authentication is the default authentication
                 cmbAuthentication.SelectedIndex = 0;
+        }
+
+        /// <summary>
+        /// Load all logins, set the last one which had a sucessful connection as the default.
+        /// </summary>
+        private void Load_Logins()
+        {
+            cmbServerName.Items.Clear();
+            cmbLogin.Items.Clear();
+
+            lConnections = Connection.GetConnections();
+
+            if (lConnections.Count != 0)
+            {
+                //First, all server names are loaded.
+                foreach (Connection c in lConnections)
+                {
+                    if (cmbServerName.FindString(c.HostName) == -1)
+                        cmbServerName.Items.Add(c.HostName);
+
+                    //Show the last sucessful login
+                    if (c.IsLastSucessfulLogin)
+                        CurrentConnection = c;
+                }
+
+                if (CurrentConnection == null)
+                    CurrentConnection = lConnections[0];
+
+                Predicate<Connection> Connection_Find = delegate(Connection c) { return c.HostName == CurrentConnection.HostName; };
+
+                List<Connection> MatchingServerNameConnections = lConnections.FindAll(Connection_Find);
+
+                //Second, all logins are loaded.
+                foreach (Connection c in MatchingServerNameConnections)
+                    //Omit windows authentication Logins
+                    if (c.UserName != "")
+                        cmbLogin.Items.Add(c.UserName);
+
+                //Last, the last successful connection is shown
+                cmbServerName.SelectedIndex = cmbServerName.FindString(CurrentConnection.HostName);
+                cmbLogin.SelectedIndex = cmbLogin.FindString(CurrentConnection.UserName);
+                if (CurrentConnection.SavePassword)
+                {
+                    txtPassword.Text = FoobarMessage;
+                    chkRememberPassword.Checked = true;
+                }
+                else
+                {
+                    txtPassword.Text = "";
+                    chkRememberPassword.Checked = false;
+                }
+
+                SelectAuthenticationType(CurrentConnection.Authentication);
+            }
+        }
+
+        /// <summary>
+        /// Maps the current authetication method that is present in authenticacion's comobox.
+        /// </summary>
+        /// <returns>Authentication currently selected</returns>
+        public AuthenticationMethods MapAuthenticationType()
+        {
+            if (cmbAuthentication.SelectedIndex == 0)
+                return AuthenticationMethods.Windows;
+            else
+                return AuthenticationMethods.SqlServer;
+        }
+
+        /// <summary>
+        /// Sets the authentication method with the value passed on
+        /// </summary>
+        /// <param name="am">Authentication method to be selected in combobox.</param>
+        public void SelectAuthenticationType(AuthenticationMethods am)
+        {
+            switch (am)
+            {
+                case AuthenticationMethods.SqlServer:
+                    cmbAuthentication.SelectedIndex = 1;
+                    break;
+                case AuthenticationMethods.Windows:
+                    cmbAuthentication.SelectedIndex = 0;
+                    break;
+                default:
+                    cmbAuthentication.SelectedIndex = 0;
+                    break;
+            }
+        }
+
+        #endregion
+
+        #region Events & Constructors
+
+        public frmConnectServer()
+        {
+            InitializeComponent();
+        }
+
+        //Cancel button event handler
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            this.Dispose();
         }
 
         //Handler of Load event
@@ -127,7 +225,7 @@ namespace Suru.InsertGenerator.GeneradorUI
             {
                 this.Hide();
 
-                DBConnection.SaveConnection(lConnections);                
+                DBConnection.SaveConnection(lConnections);
 
                 frmInserts InsertGeneratorForm = new frmInserts(DBConnection, this);
 
@@ -148,7 +246,7 @@ namespace Suru.InsertGenerator.GeneradorUI
             btnCancel.Enabled = true;
             cmbServerName.Enabled = true;
             cmbAuthentication.Enabled = true;
-            
+
             switch (cmbAuthentication.SelectedIndex)
             {
                 case 0: //Windows Authentication
@@ -166,63 +264,7 @@ namespace Suru.InsertGenerator.GeneradorUI
                     return;
             }
         }
-
-        /// <summary>
-        /// Load all logins, set the last one which had a sucessful connection as the default.
-        /// </summary>
-        private void Load_Logins()
-        {
-            lConnections = Connection.GetConnections();
-
-            cmbServerName.Items.Clear();
-            cmbLogin.Items.Clear();
-
-            lConnections = Connection.GetConnections();
-
-            if (lConnections.Count != 0)
-            {
-                //First, all server names are loaded.
-                foreach (Connection c in lConnections)
-                {
-                    if (cmbServerName.FindString(c.HostName) == -1)
-                        cmbServerName.Items.Add(c.HostName);
-
-                    //Show the last sucessful login
-                    if (c.IsLastSucessfulLogin)
-                        CurrentConnection = c;
-                }
-
-                if (CurrentConnection == null)
-                    CurrentConnection = lConnections[0];
-
-                Predicate<Connection> Connection_Find = delegate(Connection c) { return c.HostName == CurrentConnection.HostName; };
-
-                List<Connection> MatchingServerNameConnections = lConnections.FindAll(Connection_Find);
-
-                //Second, all logins are loaded.
-                foreach (Connection c in MatchingServerNameConnections)
-                    //Omit windows authentication Logins
-                    if (c.UserName != "")
-                        cmbLogin.Items.Add(c.UserName);
-
-                //Last, the last successful connection is shown
-                cmbServerName.SelectedIndex = cmbServerName.FindString(CurrentConnection.HostName);
-                cmbLogin.SelectedIndex = cmbLogin.FindString(CurrentConnection.UserName);
-                if (CurrentConnection.SavePassword)
-                {
-                    txtPassword.Text = FoobarMessage;
-                    chkRememberPassword.Checked = true;
-                }
-                else
-                {
-                    txtPassword.Text = "";
-                    chkRememberPassword.Checked = false;
-                }
-
-                SelectAuthenticationType(CurrentConnection.Authentication);
-            }
-        }
-
+                                             
         //Handler of Authentication Method change
         private void cmbAuthentication_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -293,36 +335,25 @@ namespace Suru.InsertGenerator.GeneradorUI
             SelectAuthenticationType(CurrentConnection.Authentication);
         }
 
-        /// <summary>
-        /// Maps the current authetication method that is present in authenticacion's comobox.
-        /// </summary>
-        /// <returns>Authentication currently selected</returns>
-        public AuthenticationMethods MapAuthenticationType()
+        //Handler of command keys pressed
+        private void frmConnectServer_KeyDown(object sender, KeyEventArgs e)
         {
-            if (cmbAuthentication.SelectedIndex == 0)
-                return AuthenticationMethods.Windows;
-            else
-                return AuthenticationMethods.SqlServer;
-        }
-
-        /// <summary>
-        /// Sets the authentication method with the value passed on
-        /// </summary>
-        /// <param name="am">Authentication method to be selected in combobox.</param>
-        public void SelectAuthenticationType(AuthenticationMethods am)
-        {
-            switch (am)
+            //F12 code: Resets connection file & Encryption Keys
+            if (e.KeyCode == Keys.F12)
             {
-                case AuthenticationMethods.SqlServer:
-                    cmbAuthentication.SelectedIndex = 1;
-                    break;
-                case AuthenticationMethods.Windows:
-                    cmbAuthentication.SelectedIndex = 0;
-                    break;
-                default:
-                    cmbAuthentication.SelectedIndex = 0;
-                    break;
+                if (MessageBox.Show("Are you sure you want to delete stored connections and reset encryption keys?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {                    
+                    Connection.ResetStoredConnectionsFile();
+
+                    //Encryption.ResetCryptoKeys();
+
+                    MessageBox.Show("Stored connections and Crypto keys reseted succesfully.", "Reset OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    Load_Logins();
+                }
             }
         }
+
+        #endregion
     }  
 }

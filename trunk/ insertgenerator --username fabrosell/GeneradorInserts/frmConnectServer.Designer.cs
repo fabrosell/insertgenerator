@@ -161,10 +161,12 @@
             this.Controls.Add(this.lblLogin);
             this.Controls.Add(this.lblServer);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.KeyPreview = true;
             this.MaximizeBox = false;
             this.Name = "frmConnectServer";
             this.Text = "Connect to Server";
             this.Load += new System.EventHandler(this.frmConnectServer_Load);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.frmConnectServer_KeyDown);
             this.ResumeLayout(false);
             this.PerformLayout();
 

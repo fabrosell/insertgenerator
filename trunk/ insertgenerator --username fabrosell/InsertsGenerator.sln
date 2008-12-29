@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EncryptionLibrary", "Encryp
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "InsertGenerator_Setup", "InsertGenerator\InsertGenerator.vdproj", "{C5DA831B-968E-4CF6-A021-710F2B35FB92}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleTesting", "ConsoleTesting\ConsoleTesting.csproj", "{FC12303B-4DF2-434E-91AA-FA2B6AF3C49E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,6 +32,10 @@ Global
 		{C5DA831B-968E-4CF6-A021-710F2B35FB92}.Debug|Any CPU.ActiveCfg = Release
 		{C5DA831B-968E-4CF6-A021-710F2B35FB92}.Release|Any CPU.ActiveCfg = Release
 		{C5DA831B-968E-4CF6-A021-710F2B35FB92}.Release|Any CPU.Build.0 = Release
+		{FC12303B-4DF2-434E-91AA-FA2B6AF3C49E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC12303B-4DF2-434E-91AA-FA2B6AF3C49E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC12303B-4DF2-434E-91AA-FA2B6AF3C49E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC12303B-4DF2-434E-91AA-FA2B6AF3C49E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

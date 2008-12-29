@@ -148,13 +148,27 @@ namespace Suru.InsertGenerator.BusinessLogic
                  *    <PasswordSaved>Boolean</PasswordSaved>
                  *  </Connection>
                  * </Connections>
-                 * 
-                 * Note: Inside 'Connection' tags the data will be encrypted. */
+                 */
 
                 try
                 {
                     XmlDocument xmlConnectionFile = new XmlDocument();
-                    xmlConnectionFile.LoadXml(sr.ReadToEnd());
+
+                    try
+                    {
+                        xmlConnectionFile.LoadXml(Encryption.SymetricDecrypt(sr.ReadToEnd()));
+                        sr.Close();
+                    }
+                    catch
+                    {
+                        //Exception is thrown. May happen two things:
+                        // 1º Data is unproperly formed due to an application error.
+                        // 2º Data can't be read because was originated with differents Keys
+                        //On both cases, file will be reseted.
+                        sr.Close();
+                        ResetStoredConnectionsFile();
+                    }
+
                     XmlNodeList xmlConnectionNodeList = xmlConnectionFile.DocumentElement.SelectNodes("//Connection");
                     XmlNodeList xmlTempNodes;
 
@@ -210,11 +224,8 @@ namespace Suru.InsertGenerator.BusinessLogic
                 }
                 catch (Exception ex)
                 {
-                    throw new XmlException("XML data not properly formed");
-                }
-                finally
-                {
                     sr.Close();
+                    throw new XmlException("XML data not properly formed");
                 }
             }
             catch (XmlException xmlex)
@@ -223,17 +234,33 @@ namespace Suru.InsertGenerator.BusinessLogic
             }
             catch (Exception ex)
             {
-                throw new ApplicationException("Can't load configuration file " + ConfigurationManager.AppSettings.Get("ConfigurationFile"));
+                throw new ApplicationException("Can't load configuration file " + ConfigurationManager.AppSettings.Get("ConfigurationFile") + " --> " + ex.Message);
             }
             
             return lConnections;
         }
 
         /// <summary>
+        /// Resets the Stored connection file.
+        /// </summary>
+        public static void ResetStoredConnectionsFile()
+        {
+            StreamWriter sw = new StreamWriter(ConfigurationManager.AppSettings.Get("ConfigurationFile"));
+
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("<Connections>" + "</Connections>");
+
+            sw.Write(Encryption.SymetricEncrypt(sb.ToString()));
+
+            sw.Close();
+        }
+
+        /// <summary>
         /// Save the current conection to the XML
         /// </summary>
         public void SaveConnection(List<Connection> lConnections)
-        {
+        {            
             /* Configuration File Structure
              * <Connections>
              *  <Connection>
@@ -257,16 +284,13 @@ namespace Suru.InsertGenerator.BusinessLogic
 
                 try
                 {                                        
-                    sXmlContent = sr.ReadToEnd();
+                    sXmlContent = Encryption.SymetricDecrypt(sr.ReadToEnd());
                     sr.Close();
                 }
                 catch (Exception ex)
                 {
+                    sr.Close();
                     throw ex;
-                }
-                finally
-                {
-                    sr.Close();   
                 }
 
                 try
@@ -284,7 +308,7 @@ namespace Suru.InsertGenerator.BusinessLogic
                     Boolean NodeIsFound = false;
 
                     StringBuilder sConnectionNodes = new StringBuilder();
-                    sConnectionNodes.Append("<?xml version=\"1.0\" encoding=\"utf-8\" ?>" + Environment.NewLine + "<Connections>" + Environment.NewLine);
+                    sConnectionNodes.Append("<Connections>" + Environment.NewLine);
 
                     String sUserName = "";
                     String sPassword = "";
@@ -299,7 +323,7 @@ namespace Suru.InsertGenerator.BusinessLogic
                     }
 
                     //It's always easier to rewrite the connection.
-                    sConnectionNodes.Append( "<Connection>" + Encryption.Encrypt(                                                    
+                    sConnectionNodes.Append( "<Connection>" + 
                                                 "<Host>" + _HostName + "</Host>" +
                                                 "<User>" + sUserName + "</User>" +
                                                 "<Pass>" + sPassword + "</Pass>" +
@@ -307,7 +331,7 @@ namespace Suru.InsertGenerator.BusinessLogic
                                                 "<DataBase>" + _Last_DataBase + "</DataBase>" +
                                                 "<IsLastSuccessful>True</IsLastSuccessful>" +
                                                 "<PasswordSaved>" + _SavePassword.ToString() + "</PasswordSaved>"
-                                                ) +
+                                                 +
                                               "</Connection>" + Environment.NewLine);
 
                     foreach (XmlNode xmlSavedConnection in xmlConnectionNodeList)
@@ -334,31 +358,30 @@ namespace Suru.InsertGenerator.BusinessLogic
 
                         //NodeIsFound = True --> I found the Node
                         if (!NodeIsFound)
-                            sConnectionNodes.Append("<Connection>" + Encryption.Encrypt(xmlSavedConnection.InnerXml.ToString()) + "</Connection>" + Environment.NewLine);
+                            sConnectionNodes.Append("<Connection>" + xmlSavedConnection.InnerXml.ToString() + "</Connection>" + Environment.NewLine);
                     }
 
                     //The Node List is complete. It must be written to the connection file.
                     sConnectionNodes.Append("</Connections>");
 
-                    //Writes the file
+                    //Writes the encrypted file
                     //Rewrites the file
                     sw = new StreamWriter(ConfigurationManager.AppSettings.Get("ConfigurationFile"));
 
-                    sw.Write(sConnectionNodes);
+                    sw.Write(Encryption.SymetricEncrypt(sConnectionNodes.ToString()));
+                    sw.Close();
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception();
-                }
-                finally
-                {
                     if (sw != null)
                         sw.Close();
+
+                    throw ex;
                 }
             }
             catch (Exception ex)
             {
-                throw new ApplicationException("Can't load or write configuration file " + ConfigurationManager.AppSettings.Get("ConfigurationFile"));
+                throw new ApplicationException("Can't load or write configuration file " + ConfigurationManager.AppSettings.Get("ConfigurationFile") + " --> " + ex.Message);
             }
         }
 
@@ -508,9 +531,13 @@ namespace Suru.InsertGenerator.BusinessLogic
         /// </summary>
         /// <param name="ID">Table ID.</param>
         /// <returns>List of Column objects</returns>
-        public List<Columns> GetTableColumns(Int64 ID)
+        public Table GetTableColumns(Int64 ID)
         {
-            List<Columns> lTableColumns = new List<Columns>();
+            Table t = new Table();
+
+            t.HasIdentityColumn = false;
+            t.Columns = new List<Columns>();
+            
             Columns Column;
 
             try
@@ -547,6 +574,7 @@ namespace Suru.InsertGenerator.BusinessLogic
                         if (Status >= 128)
                         {
                             Column.IdentityColumn = true;
+                            t.HasIdentityColumn = true;
                             Status -= 128;
                         }
 
@@ -568,7 +596,7 @@ namespace Suru.InsertGenerator.BusinessLogic
                         if (Status >= 8)
                             Column.AllowNulls = true;
 
-                        lTableColumns.Add(Column);
+                        t.Columns.Add(Column);
                     }
 
                     dr.Close();
@@ -580,7 +608,7 @@ namespace Suru.InsertGenerator.BusinessLogic
                 _ErrorMessage = ex.Message;
             }
 
-            return lTableColumns;
+            return t;
         }
 
         /// <summary>
@@ -778,6 +806,34 @@ namespace Suru.InsertGenerator.BusinessLogic
     }
 
     /// <summary>
+    /// Represents a Table. 
+    /// </summary>
+    public class Table
+    {
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private List<Columns> _Columns;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private Boolean _HasIdentityColumn;        
+
+        #region Attribute Encapsulation
+
+        public List<Columns> Columns
+        {
+            get { return _Columns; }
+            set { _Columns = value; }
+        }
+
+        public Boolean HasIdentityColumn
+        {
+            get { return _HasIdentityColumn; }
+            set { _HasIdentityColumn = value; }
+        }
+
+        #endregion
+    }
+
+    /// <summary>
     /// This class generates the Inserts' Scripts.
     /// </summary>
     public class SQLGeneration
@@ -853,8 +909,7 @@ namespace Suru.InsertGenerator.BusinessLogic
         /// <param name="lTables">Tables to Generate Inserts.</param>
         public void GenerateInserts(List<String> lTables)
         {
-            Int64 TableID;
-            List<Columns> TableColumns;
+            Int64 TableID;            
 
             //This list will hold all tables already generated.
             List<String> GeneratedTables = new List<String>();
@@ -872,24 +927,25 @@ namespace Suru.InsertGenerator.BusinessLogic
             String Header;
             StreamWriter sw_insert = new StreamWriter(Path.Combine(_OutputPath, GenerateFileName(ScriptTypes.InsertScript)));
             sw_insert.AutoFlush = true;
+            Table t;
 
             foreach (String TableName in lTables)
             {
                 TableID = _DBConnection.GetTableID(TableName);
+               
+                t = _DBConnection.GetTableColumns(TableID);
 
-                TableColumns = _DBConnection.GetTableColumns(TableID);
+                Header = GenerateHeaderSentence(t.Columns, TableName, true);
 
-                Header = GenerateHeaderSentence(TableColumns, TableName, true);
-
-                TableColumns = _DBConnection.GetTableData(TableColumns, GenerateHeaderSentence(TableColumns, TableName, false));
+                t.Columns = _DBConnection.GetTableData(t.Columns, GenerateHeaderSentence(t.Columns, TableName, false));
                 
                 //All rows...
-                for (Int32 i = 0; i < TableColumns[0].Data.Count; i++)
+                for (Int32 i = 0; i < t.Columns[0].Data.Count; i++)
                 {
                     sb = new StringBuilder();
                     sb.Append(Header);
 
-                    foreach (Columns c in TableColumns)
+                    foreach (Columns c in t.Columns)
                     {
                         if (c.Data[i] == null)
                             sb.Append("NULL");
@@ -898,7 +954,8 @@ namespace Suru.InsertGenerator.BusinessLogic
                             switch (dDataTypes[c.Type])
                             {
                                 case DataTypes.Binarys:
-                                    //I don't know how to process them.
+                                    //My tests conclude that this types must be included like integers (no ', no convert)
+                                    sb.Append(c.Data[i]);
                                     break;
                                 case DataTypes.Decimals:
                                     sb.Append(c.Data[i].Replace(',', '.'));
