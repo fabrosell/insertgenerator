@@ -164,9 +164,18 @@ namespace Suru.InsertGenerator.BusinessLogic
                         //Exception is thrown. May happen two things:
                         // 1º Data is unproperly formed due to an application error.
                         // 2º Data can't be read because was originated with differents Keys
-                        //On both cases, file will be reseted.
-                        sr.Close();
-                        ResetStoredConnectionsFile();
+                        // 3º Encryption keys differ because is first run.
+                        //In all cases, file will be reseted.
+                        try
+                        {
+                            sr.Close();
+                            ResetStoredConnectionsFile();
+                        }
+                        catch
+                        {
+                            Encryption.ResetCryptoKeys();
+                            ResetStoredConnectionsFile();
+                        }
                     }
 
                     XmlNodeList xmlConnectionNodeList = xmlConnectionFile.DocumentElement.SelectNodes("//Connection");
@@ -640,13 +649,16 @@ namespace Suru.InsertGenerator.BusinessLogic
                         {
                             c = lTableColumns[i];
 
-                            if (c.Data == null)
-                                c.Data = new List<String>();
+                            if (!c.OmitColumn)
+                            {
+                                if (c.Data == null)
+                                    c.Data = new List<String>();
 
-                            if (dr[c.Name] == DBNull.Value)
-                                c.Data.Add(null);
-                            else
-                                c.Data.Add(dr[c.Name].ToString().Replace("'", "''"));
+                                if (dr[c.Name] == DBNull.Value)
+                                    c.Data.Add(null);
+                                else
+                                    c.Data.Add(dr[c.Name].ToString().Replace("'", "''"));
+                            }
                         }
                     }
 
@@ -657,6 +669,7 @@ namespace Suru.InsertGenerator.BusinessLogic
             {
                 //Connection Fails
                 _ErrorMessage = ex.Message;
+                throw ex;
             }
 
             return lTableColumns;
@@ -743,6 +756,8 @@ namespace Suru.InsertGenerator.BusinessLogic
         private Boolean _OutputParameter;
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private Boolean _IdentityColumn;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private Boolean _OmitColumn;
 
         #region Attribute Encapsulation
 
@@ -794,6 +809,12 @@ namespace Suru.InsertGenerator.BusinessLogic
             set { _IdentityColumn = value; }
         }
 
+        public Boolean OmitColumn
+        {
+            get { return _OmitColumn; }
+            set { _OmitColumn = value; }
+        }
+
         #endregion
 
         public Columns()
@@ -802,6 +823,7 @@ namespace Suru.InsertGenerator.BusinessLogic
             _AnsiPaddingOn = false;
             _OutputParameter = false;
             _IdentityColumn = false;
+            _OmitColumn = false;
         }
     }
 
@@ -863,17 +885,10 @@ namespace Suru.InsertGenerator.BusinessLogic
             dDataTypes.Add("smallint", DataTypes.Integers);
             dDataTypes.Add("tinyint", DataTypes.Integers);
 
-            //Data Type Not Supported Yet
-            //dDataTypes.Add("binary", DataTypes.Binarys);
-            dDataTypes.Add("binary", DataTypes.NotSupported);
-
-            //Data Type Not Supported Yet
-            //dDataTypes.Add("varbinary", DataTypes.Binarys);
-            dDataTypes.Add("varbinary", DataTypes.NotSupported);
-
-            //Data Type Not Supported Yet
-            //dDataTypes.Add("image", DataTypes.Binarys);
-            dDataTypes.Add("image", DataTypes.NotSupported);
+            dDataTypes.Add("binary", DataTypes.Binarys);
+            dDataTypes.Add("uniqueidentifier", DataTypes.Binarys);
+            dDataTypes.Add("varbinary", DataTypes.Binarys);
+            dDataTypes.Add("image", DataTypes.Binarys);
 
             dDataTypes.Add("char", DataTypes.Strings);
             dDataTypes.Add("nchar", DataTypes.Strings);
@@ -895,8 +910,7 @@ namespace Suru.InsertGenerator.BusinessLogic
             dDataTypes.Add("smallmoney", DataTypes.Decimals);
 
             dDataTypes.Add("timestamp", DataTypes.NotIncluded);
-
-            dDataTypes.Add("uniqueidentifier", DataTypes.NotSupported);
+            
             dDataTypes.Add("sql_variant", DataTypes.NotSupported);
 
             dDataTypes.Add("sysname", DataTypes.Ignored);
@@ -916,7 +930,7 @@ namespace Suru.InsertGenerator.BusinessLogic
 
             //Integers --> These types don't need any special consideration on insert clause.
             //Decimals --> Care must be taken when generating insert (remember decimal dot).
-            //Binarys  --> Binary types. Don't know how to handle them now.
+            //Binarys  --> Binary types. They're handled like integers, without special considerations.
             //Strings  --> These types must have "'" enclosing his values.
             //SpecificTypes --> Types which must have a 'Convert' clause and values must be enclosed with "'"
             //Ignored       --> These types are not included on inserts.
@@ -928,6 +942,8 @@ namespace Suru.InsertGenerator.BusinessLogic
             StreamWriter sw_insert = new StreamWriter(Path.Combine(_OutputPath, GenerateFileName(ScriptTypes.InsertScript)));
             sw_insert.AutoFlush = true;
             Table t;
+            Boolean bEndInsertionDependant = false, bIncludeSeparator = true;
+            Int32 MaxData;
 
             foreach (String TableName in lTables)
             {
@@ -935,67 +951,118 @@ namespace Suru.InsertGenerator.BusinessLogic
                
                 t = _DBConnection.GetTableColumns(TableID);
 
+                //Table has an identity column
+                if (t.HasIdentityColumn)
+                {
+                    switch (_GenOpts.IdentityOptions)
+                    {
+                        case IdentityGenerationOptions.IdentityInsert:
+                            //Set Identity Insert Table On / Off
+                            sw_insert.WriteLine("Set Identity_Insert " + TableName + " On;");
+                            sw_insert.WriteLine();
+                            bEndInsertionDependant = true;
+                            break;
+                        case IdentityGenerationOptions.InsertionDependant:
+                            //Insertion dependant is the hardest thing to do here
+                            break;
+                        case IdentityGenerationOptions.OmitIdentityColumns:
+                            foreach (Columns c in t.Columns)
+                            {
+                                //If column is identity, type is not included
+                                if (c.IdentityColumn)
+                                    c.OmitColumn = true;
+                            }
+                            break;
+                    }
+                }
+
                 Header = GenerateHeaderSentence(t.Columns, TableName, true);
 
                 t.Columns = _DBConnection.GetTableData(t.Columns, GenerateHeaderSentence(t.Columns, TableName, false));
-                
-                //All rows...
-                for (Int32 i = 0; i < t.Columns[0].Data.Count; i++)
+
+                MaxData = 0;
+
+                for (Int32 i = 0; i < t.Columns.Count; i++)
                 {
-                    sb = new StringBuilder();
+                    if (t.Columns[i] != null && t.Columns[i].Data != null)
+                    {
+                        MaxData = t.Columns[i].Data.Count;
+                        break;
+                    }
+                }
+
+                //All rows...
+                for (Int32 i = 0; i < MaxData; i++)
+                {
+                    sb = new StringBuilder();                    
                     sb.Append(Header);
 
                     foreach (Columns c in t.Columns)
                     {
-                        if (c.Data[i] == null)
-                            sb.Append("NULL");
-                        else
-                        {                            
-                            switch (dDataTypes[c.Type])
-                            {
-                                case DataTypes.Binarys:
-                                    //My tests conclude that this types must be included like integers (no ', no convert)
-                                    sb.Append(c.Data[i]);
-                                    break;
-                                case DataTypes.Decimals:
-                                    sb.Append(c.Data[i].Replace(',', '.'));
-                                    break;
-                                case DataTypes.Ignored:
-                                    //Nothing to append.
-                                    break;
-                                case DataTypes.Integers:
-                                    sb.Append(c.Data[i]);
-                                    break;
-                                case DataTypes.NotIncluded:
-                                    //Nothing to append
-                                    break;
-                                case DataTypes.NotSupported:
-                                    throw new ApplicationException("The data type " + c.Type + " is not supported.");
-                                    break;
-                                case DataTypes.SpecificTypes:
-                                    sb.Append("Convert(");
-                                    sb.Append(c.Type);
-                                    sb.Append(", '");
-                                    sb.Append(c.Data[i]);
-                                    sb.Append("')");
-                                    break;
-                                case DataTypes.Strings:
-                                    sb.Append("'");
-                                    sb.Append(c.Data[i]);
-                                    sb.Append("'");
-                                    break;
-                            }
-                        }
+                        bIncludeSeparator = true;
 
-                        sb.Append(",");
+                        if (c.Data != null && i < c.Data.Count)
+                        {
+                            if (c.Data[i] == null)
+                                sb.Append("NULL");
+                            else
+                            {
+                                switch (dDataTypes[c.Type])
+                                {
+                                    case DataTypes.Binarys:
+                                        //My tests conclude that this types must be included like integers (no ', no convert)
+                                        sb.Append(c.Data[i]);
+                                        break;
+                                    case DataTypes.Decimals:
+                                        sb.Append(c.Data[i].Replace(',', '.'));
+                                        break;
+                                    case DataTypes.Ignored:
+                                        //Nothing to append.
+                                        break;
+                                    case DataTypes.Integers:
+                                        sb.Append(c.Data[i]);
+                                        break;
+                                    case DataTypes.NotIncluded:
+                                        //Nothing to append. No include separator
+                                        bIncludeSeparator = false;
+                                        break;
+                                    case DataTypes.NotSupported:
+                                        throw new ApplicationException("The data type " + c.Type + " is not supported.");
+                                        break;
+                                    case DataTypes.SpecificTypes:
+                                        sb.Append("Convert(");
+                                        sb.Append(c.Type);
+                                        sb.Append(", '");
+                                        sb.Append(c.Data[i]);
+                                        sb.Append("')");
+                                        break;
+                                    case DataTypes.Strings:
+                                        sb.Append("'");
+                                        sb.Append(c.Data[i]);
+                                        sb.Append("'");
+                                        break;
+                                }
+                            }
+
+                            if (bIncludeSeparator)
+                                sb.Append(",");
+                        }
                     }
 
-                    sb.Remove(sb.Length - 1, 1);
+                    if (bIncludeSeparator)
+                        sb.Remove(sb.Length - 1, 1);
+
                     sb.Append(");");
 
                     //Now I have the insertion string. I should write it to a text file.
                     sw_insert.WriteLine(sb.ToString());
-                }                
+                }
+
+                if (bEndInsertionDependant)
+                {
+                    sw_insert.WriteLine();
+                    sw_insert.WriteLine("Set Identity_Insert " + TableName + " Off;");
+                }
             }
 
             sw_insert.Close();
@@ -1026,7 +1093,7 @@ namespace Suru.InsertGenerator.BusinessLogic
                 if (dDataTypes[c.Type] == DataTypes.NotSupported)
                     throw new ApplicationException("Table " + TableName + " has a column of Data Type " + c.Type + ", which is not supported currently by application");
 
-                if (dDataTypes[c.Type] != DataTypes.NotIncluded && dDataTypes[c.Type] != DataTypes.Ignored)
+                if (dDataTypes[c.Type] != DataTypes.NotIncluded && dDataTypes[c.Type] != DataTypes.Ignored && !c.OmitColumn)
                 {
                     sb.Append(c.Name);
                     sb.Append(",");

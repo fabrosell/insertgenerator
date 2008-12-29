@@ -345,7 +345,7 @@ namespace Suru.InsertGenerator.GeneradorUI
                 {                    
                     Connection.ResetStoredConnectionsFile();
 
-                    //Encryption.ResetCryptoKeys();
+                    Encryption.ResetCryptoKeys();
 
                     MessageBox.Show("Stored connections and Crypto keys reseted succesfully.", "Reset OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
 

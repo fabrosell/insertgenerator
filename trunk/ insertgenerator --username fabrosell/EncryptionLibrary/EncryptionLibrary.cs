@@ -115,7 +115,7 @@ namespace Suru.Common.EncryptionLibrary
             // Create a CspParameters object
             CspParameters persistantCsp = new CspParameters();
 
-            persistantCsp.KeyContainerName = "Insert_Generator_CSP_Parameters_by_Suru";
+            persistantCsp.KeyContainerName = "Insert_Generator_CSP_Parameters_by_Suru_PruebaPenca";
             
             // Create an instance of the RSA algorithm object
             RSACryptoServiceProvider RSAEncryption = new RSACryptoServiceProvider(persistantCsp);
@@ -159,9 +159,58 @@ namespace Suru.Common.EncryptionLibrary
             return Encoding.Unicode.GetString(decryptedBytes);
         }
 
-        public static void ResetCryptoKeys(SecureString Pass, SecureString Salt)
+        /// <summary>
+        /// This method generates and save two random Salt and Password keys for Symetric Encryption uses.
+        /// </summary>
+        public static void ResetCryptoKeys()
         {
-            //This method do nothing by now. 
+            Random RandGen = new Random();
+            Int32 Rand1, Rand2;
+
+            StringBuilder sb_Salt = new StringBuilder();
+            StringBuilder sb_Pass = new StringBuilder();
+
+            #region Generate Random Salt and Pass 32 chars long with alfanumeric ascii codes
+
+            for (Int32 i = 0; i < 32; i++)
+            {
+                Rand1 = 0;
+                Rand2 = 0;
+
+                //Omit symbols
+                while ((Rand1 > 57 && Rand1 < 65) ||
+                       (Rand1 > 90 && Rand1 < 97) || Rand1 == 0)
+                {
+                    Rand1 = RandGen.Next(74);
+                    Rand1 += 48;
+                }
+
+                while ((Rand2 > 57 && Rand2 < 65) ||
+                       (Rand2 > 90 && Rand2 < 97) || Rand2 == 0)
+                {
+                    Rand2 = RandGen.Next(74);
+                    Rand2 += 48;
+                }
+
+                sb_Salt.Append(Char.ConvertFromUtf32(Rand1));
+                sb_Pass.Append(Char.ConvertFromUtf32(Rand2));
+            }
+
+            #endregion
+
+            //Encrypt and save new Salt and Pass
+            Configuration ConfigurationFile = ConfigurationManager.OpenExeConfiguration(AppDomain.CurrentDomain.BaseDirectory);
+
+            String NewSalt = AsymetricEncrypt(sb_Salt.ToString());
+            String NewPass = AsymetricEncrypt(sb_Pass.ToString());
+
+            ConfigurationManager.AppSettings.Set("Salt", NewSalt);
+            ConfigurationFile.AppSettings.Settings["Salt"].Value = NewSalt;
+
+            ConfigurationManager.AppSettings.Set("Pass", NewPass);
+            ConfigurationFile.AppSettings.Settings["Pass"].Value = NewPass;
+
+            ConfigurationFile.Save();
         }
     }
 }

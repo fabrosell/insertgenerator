@@ -10,7 +10,8 @@ namespace Suru.InsertGenerator.ConsoleTesting
         static void Main(string[] args)
         {
             //Test_Asymetric_Encryption_Class();
-            Test_Symetric_Encryption_Class();
+            //Test_Symetric_Encryption_Class();
+            Test_Salt_and_Pass_Generator();
 
             Console.WriteLine();
             Console.WriteLine("Press ENTER key to close.");
@@ -44,6 +45,11 @@ namespace Suru.InsertGenerator.ConsoleTesting
             Console.WriteLine("Asymetric Encrypted text: " + EncryptedText);
 
             Console.WriteLine("Asymetric Decrypted text: " + Encryption.AsymetricDecrypt(EncryptedText));
+        }
+
+        private static void Test_Salt_and_Pass_Generator()
+        {
+            Encryption.ResetCryptoKeys();
         }
     }
 }
