@@ -115,7 +115,7 @@ namespace Suru.Common.EncryptionLibrary
             // Create a CspParameters object
             CspParameters persistantCsp = new CspParameters();
 
-            persistantCsp.KeyContainerName = "Insert_Generator_CSP_Parameters_by_Suru_PruebaPenca";
+            persistantCsp.KeyContainerName = "Insert_Generator_CSP_Parameters_by_Suru";
             
             // Create an instance of the RSA algorithm object
             RSACryptoServiceProvider RSAEncryption = new RSACryptoServiceProvider(persistantCsp);
@@ -164,53 +164,80 @@ namespace Suru.Common.EncryptionLibrary
         /// </summary>
         public static void ResetCryptoKeys()
         {
-            Random RandGen = new Random();
-            Int32 Rand1, Rand2;
-
-            StringBuilder sb_Salt = new StringBuilder();
-            StringBuilder sb_Pass = new StringBuilder();
-
-            #region Generate Random Salt and Pass 32 chars long with alfanumeric ascii codes
-
-            for (Int32 i = 0; i < 32; i++)
+            try
             {
-                Rand1 = 0;
-                Rand2 = 0;
+                Random RandGen = new Random();
+                Int32 Rand1, Rand2;
 
-                //Omit symbols
-                while ((Rand1 > 57 && Rand1 < 65) ||
-                       (Rand1 > 90 && Rand1 < 97) || Rand1 == 0)
+                StringBuilder sb_Salt = new StringBuilder();
+                StringBuilder sb_Pass = new StringBuilder();
+
+                #region Generate Random Salt and Pass 32 chars long with alfanumeric ascii codes
+
+                for (Int32 i = 0; i < 32; i++)
                 {
-                    Rand1 = RandGen.Next(74);
-                    Rand1 += 48;
+                    Rand1 = 0;
+                    Rand2 = 0;
+
+                    //Omit symbols
+                    while ((Rand1 > 57 && Rand1 < 65) ||
+                           (Rand1 > 90 && Rand1 < 97) || Rand1 == 0)
+                    {
+                        Rand1 = RandGen.Next(74);
+                        Rand1 += 48;
+                    }
+
+                    while ((Rand2 > 57 && Rand2 < 65) ||
+                           (Rand2 > 90 && Rand2 < 97) || Rand2 == 0)
+                    {
+                        Rand2 = RandGen.Next(74);
+                        Rand2 += 48;
+                    }
+
+                    sb_Salt.Append(Char.ConvertFromUtf32(Rand1));
+                    sb_Pass.Append(Char.ConvertFromUtf32(Rand2));
                 }
 
-                while ((Rand2 > 57 && Rand2 < 65) ||
-                       (Rand2 > 90 && Rand2 < 97) || Rand2 == 0)
+                #endregion
+
+                //Encrypt and save new Salt and Pass
+                String ConfigName = null;
+                DirectoryInfo dInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);                
+
+                foreach (FileInfo f in dInfo.GetFiles())
                 {
-                    Rand2 = RandGen.Next(74);
-                    Rand2 += 48;
+                    if (f.Extension == ".config")
+                    {
+                        ConfigName = f.Name;
+                        break;
+                    }
                 }
 
-                sb_Salt.Append(Char.ConvertFromUtf32(Rand1));
-                sb_Pass.Append(Char.ConvertFromUtf32(Rand2));
+                if (ConfigName == null)
+                    throw new ApplicationException("Can't found configuration file.");
+
+                //Getting Configuration file is not as easy as in application
+                ExeConfigurationFileMap fileMap = new ExeConfigurationFileMap();
+
+                fileMap.ExeConfigFilename = ConfigName;
+
+                Configuration ConfigurationFile = ConfigurationManager.OpenMappedExeConfiguration(fileMap, ConfigurationUserLevel.None);
+
+                String NewSalt = AsymetricEncrypt(sb_Salt.ToString());
+                String NewPass = AsymetricEncrypt(sb_Pass.ToString());
+
+                ConfigurationManager.AppSettings.Set("Salt", NewSalt);
+                ConfigurationFile.AppSettings.Settings["Salt"].Value = NewSalt;
+
+                ConfigurationManager.AppSettings.Set("Pass", NewPass);
+                ConfigurationFile.AppSettings.Settings["Pass"].Value = NewPass;
+
+                ConfigurationFile.Save();
             }
-
-            #endregion
-
-            //Encrypt and save new Salt and Pass
-            Configuration ConfigurationFile = ConfigurationManager.OpenExeConfiguration(AppDomain.CurrentDomain.BaseDirectory);
-
-            String NewSalt = AsymetricEncrypt(sb_Salt.ToString());
-            String NewPass = AsymetricEncrypt(sb_Pass.ToString());
-
-            ConfigurationManager.AppSettings.Set("Salt", NewSalt);
-            ConfigurationFile.AppSettings.Settings["Salt"].Value = NewSalt;
-
-            ConfigurationManager.AppSettings.Set("Pass", NewPass);
-            ConfigurationFile.AppSettings.Settings["Pass"].Value = NewPass;
-
-            ConfigurationFile.Save();
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Error in ResetCryptoKeys: " + ex.Message);
+            }
         }
     }
 }

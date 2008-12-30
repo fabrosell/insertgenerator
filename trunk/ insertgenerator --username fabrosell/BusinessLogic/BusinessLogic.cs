@@ -149,14 +149,14 @@ namespace Suru.InsertGenerator.BusinessLogic
                  *  </Connection>
                  * </Connections>
                  */
-
                 try
                 {
                     XmlDocument xmlConnectionFile = new XmlDocument();
-
+                    String FileData = null;
+                  
                     try
                     {
-                        xmlConnectionFile.LoadXml(Encryption.SymetricDecrypt(sr.ReadToEnd()));
+                        FileData = Encryption.SymetricDecrypt(sr.ReadToEnd());
                         sr.Close();
                     }
                     catch
@@ -176,8 +176,14 @@ namespace Suru.InsertGenerator.BusinessLogic
                             Encryption.ResetCryptoKeys();
                             ResetStoredConnectionsFile();
                         }
+                        finally
+                        {
+                            //This is the data in file after resetion
+                            FileData = "<Connections></Connections>";
+                        }
                     }
 
+                    xmlConnectionFile.LoadXml(FileData);
                     XmlNodeList xmlConnectionNodeList = xmlConnectionFile.DocumentElement.SelectNodes("//Connection");
                     XmlNodeList xmlTempNodes;
 
@@ -254,15 +260,26 @@ namespace Suru.InsertGenerator.BusinessLogic
         /// </summary>
         public static void ResetStoredConnectionsFile()
         {
-            StreamWriter sw = new StreamWriter(ConfigurationManager.AppSettings.Get("ConfigurationFile"));
+            StreamWriter sw = null;
+            try
+            {
+                sw = new StreamWriter(ConfigurationManager.AppSettings.Get("ConfigurationFile"));
 
-            StringBuilder sb = new StringBuilder();
+                StringBuilder sb = new StringBuilder();
 
-            sb.Append("<Connections>" + "</Connections>");
+                sb.Append("<Connections>" + "</Connections>");
 
-            sw.Write(Encryption.SymetricEncrypt(sb.ToString()));
+                sw.Write(Encryption.SymetricEncrypt(sb.ToString()));
 
-            sw.Close();
+                sw.Close();
+            }
+            catch (Exception ex)
+            {
+                if (sw != null)
+                    sw.Close();
+
+                throw ex;
+            }
         }
 
         /// <summary>
