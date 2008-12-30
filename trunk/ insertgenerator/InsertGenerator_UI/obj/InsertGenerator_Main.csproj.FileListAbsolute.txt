@@ -17,3 +17,6 @@ C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Proj
 C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\GeneradorInserts\InsertGenerator_UI\bin\Debug\Suru.InsertGenerator.GeneradorUI.exe.config
 C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\GeneradorInserts\InsertGenerator_UI\obj\Debug\Suru.InsertGenerator.GeneradorUI.exe
 C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\GeneradorInserts\InsertGenerator_UI\obj\Debug\Suru.InsertGenerator.GeneradorUI.pdb
+C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\InsertGenerator\InsertGenerator_UI\bin\Debug\Suru.InsertGenerator.GeneradorUI.exe.config
+C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\InsertGenerator\InsertGenerator_UI\obj\Debug\Suru.InsertGenerator.GeneradorUI.exe
+C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\InsertGenerator\InsertGenerator_UI\obj\Debug\Suru.InsertGenerator.GeneradorUI.pdb
