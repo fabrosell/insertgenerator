@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
+using System.Configuration;
 using Suru.InsertGenerator.BusinessLogic;
 
 namespace Suru.InsertGenerator.GeneradorUI
@@ -53,7 +54,32 @@ namespace Suru.InsertGenerator.GeneradorUI
             if (rbInsertionDependant.Checked)
                 IdentityGenOpts = IdentityGenerationOptions.InsertionDependant;
 
+            //Top Rows, if apply
+            if (nudTopRows.Value != 0)
+                _Parent.gGenOptions.TopRows = (Int32)nudTopRows.Value;
+            else
+                _Parent.gGenOptions.TopRows = null;
+
+            //Max lines per block
+            _Parent.gGenOptions.LinesPerBlock = (Int32)nudLinesPerSQLBlock.Value;
+
             _Parent.gGenOptions.IdentityOptions = IdentityGenOpts;
+        }
+
+        private void frmScriptOptions_Load(object sender, EventArgs e)
+        {
+            try
+            {
+                nudLinesPerSQLBlock.Maximum = Int32.Parse(ConfigurationManager.AppSettings.Get("LinesPerBlock"));                
+                nudLinesPerSQLBlock.Minimum = 1;
+                nudLinesPerSQLBlock.Increment = 100;
+                nudLinesPerSQLBlock.Value = nudLinesPerSQLBlock.Maximum;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Invalid Lines per Block setting!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                this.Dispose();
+            }
         }
     }
 }

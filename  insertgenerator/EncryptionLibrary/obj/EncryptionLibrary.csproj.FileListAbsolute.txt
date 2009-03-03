@@ -8,3 +8,8 @@ C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Proj
 C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\GeneradorInserts\EncryptionLibrary\obj\Debug\ResolveAssemblyReference.cache
 C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\GeneradorInserts\EncryptionLibrary\obj\Debug\Suru.Common.EncryptionLibrary.dll
 C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\GeneradorInserts\EncryptionLibrary\obj\Debug\Suru.Common.EncryptionLibrary.pdb
+C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\InsertGenerator\EncryptionLibrary\bin\Debug\Suru.Common.EncryptionLibrary.dll
+C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\InsertGenerator\EncryptionLibrary\bin\Debug\Suru.Common.EncryptionLibrary.pdb
+C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\InsertGenerator\EncryptionLibrary\obj\Debug\ResolveAssemblyReference.cache
+C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\InsertGenerator\EncryptionLibrary\obj\Debug\Suru.Common.EncryptionLibrary.dll
+C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\InsertGenerator\EncryptionLibrary\obj\Debug\Suru.Common.EncryptionLibrary.pdb

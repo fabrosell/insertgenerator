@@ -37,8 +37,14 @@ namespace Suru.InsertGenerator.GeneradorUI
             this.rbNoIdentity = new System.Windows.Forms.RadioButton();
             this.gbIdentityOptions = new System.Windows.Forms.GroupBox();
             this.gbGeneralOptions = new System.Windows.Forms.GroupBox();
+            this.lblRows = new System.Windows.Forms.Label();
+            this.nudTopRows = new System.Windows.Forms.NumericUpDown();
+            this.lblLPSB = new System.Windows.Forms.Label();
+            this.nudLinesPerSQLBlock = new System.Windows.Forms.NumericUpDown();
             this.gbIdentityOptions.SuspendLayout();
             this.gbGeneralOptions.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nudTopRows)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudLinesPerSQLBlock)).BeginInit();
             this.SuspendLayout();
             // 
             // chkGenerateTransactional
@@ -91,7 +97,7 @@ namespace Suru.InsertGenerator.GeneradorUI
             this.rbIdentitiesFromTable.Location = new System.Drawing.Point(6, 19);
             this.rbIdentitiesFromTable.Name = "rbIdentitiesFromTable";
             this.rbIdentitiesFromTable.Size = new System.Drawing.Size(222, 17);
-            this.rbIdentitiesFromTable.TabIndex = 5;
+            this.rbIdentitiesFromTable.TabIndex = 6;
             this.rbIdentitiesFromTable.TabStop = true;
             this.rbIdentitiesFromTable.Text = "Enable Identity Insert (values from Tables)";
             this.rbIdentitiesFromTable.UseVisualStyleBackColor = true;
@@ -103,7 +109,7 @@ namespace Suru.InsertGenerator.GeneradorUI
             this.rbInsertionDependant.Location = new System.Drawing.Point(6, 42);
             this.rbInsertionDependant.Name = "rbInsertionDependant";
             this.rbInsertionDependant.Size = new System.Drawing.Size(158, 17);
-            this.rbInsertionDependant.TabIndex = 6;
+            this.rbInsertionDependant.TabIndex = 7;
             this.rbInsertionDependant.TabStop = true;
             this.rbInsertionDependant.Text = "Insertion-Dependant Identity";
             this.rbInsertionDependant.UseVisualStyleBackColor = true;
@@ -114,7 +120,7 @@ namespace Suru.InsertGenerator.GeneradorUI
             this.rbNoIdentity.Location = new System.Drawing.Point(6, 65);
             this.rbNoIdentity.Name = "rbNoIdentity";
             this.rbNoIdentity.Size = new System.Drawing.Size(180, 17);
-            this.rbNoIdentity.TabIndex = 7;
+            this.rbNoIdentity.TabIndex = 8;
             this.rbNoIdentity.TabStop = true;
             this.rbNoIdentity.Text = "No Identity Inserts (omit columns)";
             this.rbNoIdentity.UseVisualStyleBackColor = true;
@@ -124,7 +130,7 @@ namespace Suru.InsertGenerator.GeneradorUI
             this.gbIdentityOptions.Controls.Add(this.rbIdentitiesFromTable);
             this.gbIdentityOptions.Controls.Add(this.rbNoIdentity);
             this.gbIdentityOptions.Controls.Add(this.rbInsertionDependant);
-            this.gbIdentityOptions.Location = new System.Drawing.Point(15, 130);
+            this.gbIdentityOptions.Location = new System.Drawing.Point(12, 188);
             this.gbIdentityOptions.Name = "gbIdentityOptions";
             this.gbIdentityOptions.Size = new System.Drawing.Size(231, 95);
             this.gbIdentityOptions.TabIndex = 8;
@@ -133,32 +139,95 @@ namespace Suru.InsertGenerator.GeneradorUI
             // 
             // gbGeneralOptions
             // 
+            this.gbGeneralOptions.Controls.Add(this.lblLPSB);
+            this.gbGeneralOptions.Controls.Add(this.nudLinesPerSQLBlock);
+            this.gbGeneralOptions.Controls.Add(this.lblRows);
+            this.gbGeneralOptions.Controls.Add(this.nudTopRows);
             this.gbGeneralOptions.Controls.Add(this.chkGenerateTransactional);
             this.gbGeneralOptions.Controls.Add(this.chkGenerateTables);
             this.gbGeneralOptions.Controls.Add(this.chkGenerateCorrelated);
             this.gbGeneralOptions.Controls.Add(this.chkGenerateDerived);
             this.gbGeneralOptions.Location = new System.Drawing.Point(12, 12);
             this.gbGeneralOptions.Name = "gbGeneralOptions";
-            this.gbGeneralOptions.Size = new System.Drawing.Size(236, 112);
+            this.gbGeneralOptions.Size = new System.Drawing.Size(236, 170);
             this.gbGeneralOptions.TabIndex = 9;
             this.gbGeneralOptions.TabStop = false;
             this.gbGeneralOptions.Text = "General Options";
+            // 
+            // lblRows
+            // 
+            this.lblRows.AutoSize = true;
+            this.lblRows.Location = new System.Drawing.Point(106, 113);
+            this.lblRows.Name = "lblRows";
+            this.lblRows.Size = new System.Drawing.Size(91, 13);
+            this.lblRows.TabIndex = 7;
+            this.lblRows.Text = "Top rows (0 = all).";
+            // 
+            // nudTopRows
+            // 
+            this.nudTopRows.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.nudTopRows.Increment = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+            this.nudTopRows.Location = new System.Drawing.Point(6, 111);
+            this.nudTopRows.Maximum = new decimal(new int[] {
+            1000000,
+            0,
+            0,
+            0});
+            this.nudTopRows.Name = "nudTopRows";
+            this.nudTopRows.Size = new System.Drawing.Size(91, 20);
+            this.nudTopRows.TabIndex = 5;
+            this.nudTopRows.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // lblLPSB
+            // 
+            this.lblLPSB.AutoSize = true;
+            this.lblLPSB.Location = new System.Drawing.Point(106, 139);
+            this.lblLPSB.Name = "lblLPSB";
+            this.lblLPSB.Size = new System.Drawing.Size(107, 13);
+            this.lblLPSB.TabIndex = 9;
+            this.lblLPSB.Text = "Lines per SQL Block.";
+            // 
+            // nudLinesPerSQLBlock
+            // 
+            this.nudLinesPerSQLBlock.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.nudLinesPerSQLBlock.Increment = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+            this.nudLinesPerSQLBlock.Location = new System.Drawing.Point(6, 137);
+            this.nudLinesPerSQLBlock.Maximum = new decimal(new int[] {
+            1000000,
+            0,
+            0,
+            0});
+            this.nudLinesPerSQLBlock.Name = "nudLinesPerSQLBlock";
+            this.nudLinesPerSQLBlock.Size = new System.Drawing.Size(91, 20);
+            this.nudLinesPerSQLBlock.TabIndex = 8;
+            this.nudLinesPerSQLBlock.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // frmScriptOptions
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(260, 240);
+            this.ClientSize = new System.Drawing.Size(260, 294);
             this.Controls.Add(this.gbGeneralOptions);
             this.Controls.Add(this.gbIdentityOptions);
             this.Name = "frmScriptOptions";
             this.ShowInTaskbar = false;
             this.Text = "Script Options";
+            this.Load += new System.EventHandler(this.frmScriptOptions_Load);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmScriptOptions_FormClosing);
             this.gbIdentityOptions.ResumeLayout(false);
             this.gbIdentityOptions.PerformLayout();
             this.gbGeneralOptions.ResumeLayout(false);
             this.gbGeneralOptions.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nudTopRows)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudLinesPerSQLBlock)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -174,5 +243,9 @@ namespace Suru.InsertGenerator.GeneradorUI
         private System.Windows.Forms.RadioButton rbNoIdentity;
         private System.Windows.Forms.GroupBox gbIdentityOptions;
         private System.Windows.Forms.GroupBox gbGeneralOptions;
+        private System.Windows.Forms.Label lblRows;
+        private System.Windows.Forms.NumericUpDown nudTopRows;
+        private System.Windows.Forms.Label lblLPSB;
+        private System.Windows.Forms.NumericUpDown nudLinesPerSQLBlock;
     }
 }
