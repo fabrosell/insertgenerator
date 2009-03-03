@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("BusinessLogic")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("TCS Chile S.A.")]
+[assembly: AssemblyCompany("SuruLabs.")]
 [assembly: AssemblyProduct("BusinessLogic")]
-[assembly: AssemblyCopyright("© TCS Chile S.A. 2008")]
+[assembly: AssemblyCopyright("© SuruLabs 2009")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -31,5 +31,5 @@ using System.Runtime.InteropServices;
 //
 // Puede especificar todos los valores o puede establecer como valores predeterminados los números de revisión y generación 
 // mediante el asterisco ('*'), como se muestra a continuación:
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.0.1.0")]
+[assembly: AssemblyFileVersion("1.0.1.0")]

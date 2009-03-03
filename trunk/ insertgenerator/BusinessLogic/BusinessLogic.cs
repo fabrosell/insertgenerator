@@ -708,6 +708,10 @@ namespace Suru.InsertGenerator.BusinessLogic
         private Boolean _CorrelatedDataTablesScript;
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private IdentityGenerationOptions _IdentityOptions;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private Nullable<Int32> _TopRows;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private Int32 _LinesPerBlock;
 
         #region Attribute Encapsulation
 
@@ -741,6 +745,18 @@ namespace Suru.InsertGenerator.BusinessLogic
             set { _IdentityOptions = value; }
         }
 
+        public Nullable<Int32> TopRows
+        {
+            get { return _TopRows; }
+            set { _TopRows = value; }
+        }
+
+        public Int32 LinesPerBlock
+        {
+            get { return _LinesPerBlock; }
+            set { _LinesPerBlock = value; }
+        }
+
         #endregion
     }
 
@@ -748,7 +764,7 @@ namespace Suru.InsertGenerator.BusinessLogic
 
     public enum IdentityGenerationOptions { IdentityInsert, InsertionDependant, OmitIdentityColumns };
 
-    public enum DataTypes { Integers, Decimals, Binarys, Strings, SpecificTypes, Ignored, NotIncluded, NotSupported };
+    public enum DataTypes { Integers, Decimals, Binarys, Strings, SpecificTypes, Ignored, NotIncluded, NotSupported, Dates };
 
     public enum ScriptTypes { TableScript, InsertScript };
 
@@ -883,6 +899,9 @@ namespace Suru.InsertGenerator.BusinessLogic
         private Dictionary<String, DataTypes> dDataTypes = null;
         private Int32 _Script_Number = 1;
 
+        //Date format: yyyy-mm-dd hh:mi:ss.mmm(24h)
+        private const Int32 DateFormatStyle = 121;
+
         /// <summary>
         /// Class' constructor.
         /// </summary>
@@ -916,8 +935,9 @@ namespace Suru.InsertGenerator.BusinessLogic
 
             dDataTypes.Add("xml", DataTypes.SpecificTypes);
             dDataTypes.Add("bit", DataTypes.SpecificTypes);
-            dDataTypes.Add("datetime", DataTypes.SpecificTypes);
-            dDataTypes.Add("smalldatetime", DataTypes.SpecificTypes);
+
+            dDataTypes.Add("datetime", DataTypes.Dates);
+            dDataTypes.Add("smalldatetime", DataTypes.Dates);
 
             dDataTypes.Add("decimal", DataTypes.Decimals);
             dDataTypes.Add("float", DataTypes.Decimals);
@@ -939,7 +959,7 @@ namespace Suru.InsertGenerator.BusinessLogic
         /// </summary>
         /// <param name="lTables">Tables to Generate Inserts.</param>
         public void GenerateInserts(List<String> lTables)
-        {
+        {            
             Int64 TableID;            
 
             //This list will hold all tables already generated.
@@ -950,6 +970,7 @@ namespace Suru.InsertGenerator.BusinessLogic
             //Binarys  --> Binary types. They're handled like integers, without special considerations.
             //Strings  --> These types must have "'" enclosing his values.
             //SpecificTypes --> Types which must have a 'Convert' clause and values must be enclosed with "'"
+            //DateTimes     --> Care must be taken when converting. Problems were reported...
             //Ignored       --> These types are not included on inserts.
             //NotIncluded   --> These types are not included on inserts, because it's impossible to insert them.
             //NotSupported  --> These types are not supported yet. An exception must be thrown.
@@ -960,7 +981,10 @@ namespace Suru.InsertGenerator.BusinessLogic
             sw_insert.AutoFlush = true;
             Table t;
             Boolean bEndInsertionDependant = false, bIncludeSeparator = true;
-            Int32 MaxData;
+            Int32 MaxData, LinesPerBlock = 0;
+
+            if (_GenOpts.LinesPerBlock == 0)
+                _GenOpts.LinesPerBlock = Int32.Parse(ConfigurationManager.AppSettings.Get("LinesPerBlock"));
 
             foreach (String TableName in lTables)
             {
@@ -993,9 +1017,9 @@ namespace Suru.InsertGenerator.BusinessLogic
                     }
                 }
 
-                Header = GenerateHeaderSentence(t.Columns, TableName, true);
+                Header = GenerateHeaderSentence(t.Columns, TableName, null, true);
 
-                t.Columns = _DBConnection.GetTableData(t.Columns, GenerateHeaderSentence(t.Columns, TableName, false));
+                t.Columns = _DBConnection.GetTableData(t.Columns, GenerateHeaderSentence(t.Columns, TableName, _GenOpts.TopRows, false));
 
                 MaxData = 0;
 
@@ -1011,6 +1035,36 @@ namespace Suru.InsertGenerator.BusinessLogic
                 //All rows...
                 for (Int32 i = 0; i < MaxData; i++)
                 {
+                    #region Check and Breaks script is LinesPerBlock reached
+                    //Lines per block reached.
+                    if (LinesPerBlock == _GenOpts.LinesPerBlock)
+                    {
+                        sw_insert.WriteLine();
+
+                        //Disable Identity Insert
+                        if (bEndInsertionDependant)
+                        {
+                            sw_insert.WriteLine("Set Identity_Insert " + TableName + " Off;");
+                            sw_insert.WriteLine();
+                        }
+
+                        //Go Statement - This sentence completes the batch and the query's memory consupmtion.
+                        //Remember: "Go" does not have semicolon.
+                        sw_insert.WriteLine("Go");
+                        sw_insert.WriteLine();
+
+                        //Re-enable Identity Insert
+                        if (bEndInsertionDependant)
+                        {
+                            sw_insert.WriteLine("Set Identity_Insert " + TableName + " On;");
+                            sw_insert.WriteLine();
+                        }
+
+                        //Resets the line counter.
+                        LinesPerBlock = 0;
+                    }
+                    #endregion
+
                     sb = new StringBuilder();                    
                     sb.Append(Header);
 
@@ -1058,6 +1112,15 @@ namespace Suru.InsertGenerator.BusinessLogic
                                         sb.Append(c.Data[i]);
                                         sb.Append("'");
                                         break;
+                                    case DataTypes.Dates:
+                                        sb.Append("Convert(");
+                                        sb.Append(c.Type);
+                                        sb.Append(", '");
+                                        sb.Append(c.Data[i]);
+                                        sb.Append("', ");
+                                        sb.Append(DateFormatStyle);
+                                        sb.Append(")");
+                                        break;
                                 }
                             }
 
@@ -1073,6 +1136,9 @@ namespace Suru.InsertGenerator.BusinessLogic
 
                     //Now I have the insertion string. I should write it to a text file.
                     sw_insert.WriteLine(sb.ToString());
+
+                    //Increments the line counter
+                    LinesPerBlock++;
                 }
 
                 if (bEndInsertionDependant)
@@ -1092,7 +1158,7 @@ namespace Suru.InsertGenerator.BusinessLogic
         /// <param name="TableName">Table's name.</param>
         /// <param name="bIsInsert">If true, generate Insert statement. Otherwise, generate select sentence.</param>
         /// <returns>Insert sentence (first part).</returns>
-        private String GenerateHeaderSentence(List<Columns> lColumns, String TableName, Boolean bIsInsert)
+        private String GenerateHeaderSentence(List<Columns> lColumns, String TableName, Nullable<Int32> Rows, Boolean bIsInsert)
         {
             StringBuilder sb = new StringBuilder();
 
@@ -1103,17 +1169,48 @@ namespace Suru.InsertGenerator.BusinessLogic
                 sb.Append("(");
             }
             else
+            {
                 sb.Append("Select ");
+
+                if (Rows != null)
+                {
+                    sb.Append(" Top ");
+                    sb.Append(Rows);
+                    sb.Append(" ");
+                }
+            }
 
             foreach (Columns c in lColumns)
             {             
+                //Cannot select not supported data types
                 if (dDataTypes[c.Type] == DataTypes.NotSupported)
                     throw new ApplicationException("Table " + TableName + " has a column of Data Type " + c.Type + ", which is not supported currently by application");
 
-                if (dDataTypes[c.Type] != DataTypes.NotIncluded && dDataTypes[c.Type] != DataTypes.Ignored && !c.OmitColumn)
+                //Ignored and Not included data types won't be selected.
+                if (dDataTypes[c.Type] != DataTypes.NotIncluded && dDataTypes[c.Type] != DataTypes.Ignored && !c.OmitColumn && dDataTypes[c.Type] != DataTypes.Dates)
                 {
                     sb.Append(c.Name);
                     sb.Append(",");
+                }
+
+                //Dates must be converted to ISO format before processing.
+                if (dDataTypes[c.Type] == DataTypes.Dates)
+                {
+                    if (bIsInsert)
+                    {
+                        sb.Append(c.Name);
+                        sb.Append(",");
+                    }
+                    else
+                    {
+                        sb.Append("Convert(VarChar, ");
+                        sb.Append(c.Name);
+                        sb.Append(", ");
+                        sb.Append(DateFormatStyle);
+                        sb.Append(") As ");
+                        sb.Append(c.Name);
+                        sb.Append(",");
+                    }
                 }
             }
 
