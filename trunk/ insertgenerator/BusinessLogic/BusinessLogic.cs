@@ -1397,7 +1397,19 @@ namespace Suru.InsertGenerator.BusinessLogic
                 Dependancy.Add(TableDependancy);
             }
 
-            //2nd: sort tables
+            //2nd: calculate dependancy
+            Int32[,] TableOrden = new Int32[lTables.Count, 2];
+            
+            for (Int32 i = 0; i < lTables.Count; i++)
+            {
+                TableOrden[i, 0] = i;
+                TableOrden[i, 1] = 0;
+
+                
+            }
+
+            //3rd: generate ordered list
+            
 
             return lTables;
         }
