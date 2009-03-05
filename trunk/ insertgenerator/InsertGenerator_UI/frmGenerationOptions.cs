@@ -70,15 +70,41 @@ namespace Suru.InsertGenerator.GeneradorUI
         {
             try
             {
-                nudLinesPerSQLBlock.Maximum = Int32.Parse(ConfigurationManager.AppSettings.Get("LinesPerBlock"));                
-                nudLinesPerSQLBlock.Minimum = 1;
-                nudLinesPerSQLBlock.Increment = 100;
-                nudLinesPerSQLBlock.Value = nudLinesPerSQLBlock.Maximum;
+                InitializarNudLinesPerSQLBlock();
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Invalid Lines per Block setting!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 this.Dispose();
+            }
+        }
+
+        private void InitializarNudLinesPerSQLBlock()
+        {
+            nudLinesPerSQLBlock.Maximum = Int32.Parse(ConfigurationManager.AppSettings.Get("LinesPerBlock"));
+            nudLinesPerSQLBlock.Minimum = 1;
+            nudLinesPerSQLBlock.Increment = 100;
+            nudLinesPerSQLBlock.Value = nudLinesPerSQLBlock.Maximum;
+            nudLinesPerSQLBlock.Enabled = true;
+        }
+
+        private void chkGenerateTransactional_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkGenerateTransactional.Checked)
+            {
+                if (DialogResult.No == MessageBox.Show("Warning: you won't we allowed to break the script after " + nudLinesPerSQLBlock.Value.ToString() + " lines. Do you want to continue?", "Break script disabled", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2))
+                {
+                    nudLinesPerSQLBlock.Enabled = true;
+                    chkGenerateTransactional.Checked = false;
+                }
+                else
+                {                    
+                    nudLinesPerSQLBlock.Enabled = false;
+                }
+            }
+            else
+            {
+                nudLinesPerSQLBlock.Enabled = true;
             }
         }
     }
