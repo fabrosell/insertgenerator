@@ -1383,33 +1383,40 @@ namespace Suru.InsertGenerator.BusinessLogic
         {
             //Tables must be sorted by dependancy.
             //E.g.: less or none dependant table first. Most dependant table last.
-
-            //1st: load dependancy tables
+            
             List<DependancyList> Dependancy = new List<DependancyList>();
             DependancyList TableDependancy = null;
 
-            foreach (String tablename in lTables)
+            //This matrix will tell dependency count and dependency graph
+            Int16[,] TableOrden = new Int16[lTables.Count, lTables.Count];
+
+            String tablename = null;
+            Int16 ReferenceCount;
+
+            for (Int16 i = 0; i < lTables.Count; i++)
             {
+                ReferenceCount = 0;
+
+                tablename = lTables[i];
                 TableDependancy = new DependancyList();
                 TableDependancy.TableName = tablename;
                 TableDependancy.TableDependancy = DBConnection.ListTableDependancy(tablename);
 
                 Dependancy.Add(TableDependancy);
-            }
 
-            //2nd: calculate dependancy
-            Int32[,] TableOrden = new Int32[lTables.Count, 2];
-            
-            for (Int32 i = 0; i < lTables.Count; i++)
-            {
-                TableOrden[i, 0] = i;
-                TableOrden[i, 1] = 0;
+                if (TableDependancy.TableDependancy != null)
+                    //Only check selected tables, not all of them
+                    for (Int16 j = 0; j < lTables.Count; j++)
+                        //Not checking itself
+                        if (i != j && TableDependancy.TableDependancy.Contains(lTables[j]))
+                        {
+                            TableOrden[i, j] = 1;
+                            ReferenceCount++;
+                        }
 
-                
-            }
-
-            //3rd: generate ordered list
-            
+                //[i,i] positions will store the reference count, to save space.
+                TableOrden[i, i] = ReferenceCount;
+            }           
 
             return lTables;
         }
