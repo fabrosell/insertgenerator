@@ -1088,6 +1088,7 @@ namespace Suru.InsertGenerator.BusinessLogic
                     {
                         case IdentityGenerationOptions.IdentityInsert:
                             //Set Identity Insert Table On / Off
+                            sw_insert.WriteLine();
                             sw_insert.WriteLine("Set Identity_Insert " + TableName + " On;");
                             sw_insert.WriteLine();
                             bEndInsertionDependant = true;
@@ -1239,6 +1240,7 @@ namespace Suru.InsertGenerator.BusinessLogic
                 {
                     sw_insert.WriteLine();
                     sw_insert.WriteLine("Set Identity_Insert " + TableName + " Off;");
+                    sw_insert.WriteLine();
                 }
             }
 
@@ -1383,42 +1385,126 @@ namespace Suru.InsertGenerator.BusinessLogic
         {
             //Tables must be sorted by dependancy.
             //E.g.: less or none dependant table first. Most dependant table last.
-            
+
+            #region Local Variables
+
             List<DependancyList> Dependancy = new List<DependancyList>();
             DependancyList TableDependancy = null;
 
             //This matrix will tell dependency count and dependency graph
-            Int16[,] TableOrden = new Int16[lTables.Count, lTables.Count];
+            Int16[,] TableOrder = new Int16[lTables.Count, lTables.Count];
+            Int16[] ReferenceCountArray = new Int16[lTables.Count];
+            Int16[] RowOrderArray = new Int16[lTables.Count];
 
             String tablename = null;
             Int16 ReferenceCount;
+            Boolean IncrementI = true;
 
-            for (Int16 i = 0; i < lTables.Count; i++)
+            #endregion
+
+            #region Generate Dependancy Table Graph and PreOrdering arrays
+
+            for (Int16 ii = 0; ii < lTables.Count; ii++)
             {
                 ReferenceCount = 0;
 
-                tablename = lTables[i];
+                tablename = lTables[ii];
                 TableDependancy = new DependancyList();
                 TableDependancy.TableName = tablename;
                 TableDependancy.TableDependancy = DBConnection.ListTableDependancy(tablename);
 
-                Dependancy.Add(TableDependancy);
+                Dependancy.Add(TableDependancy);                                
 
                 if (TableDependancy.TableDependancy != null)
                     //Only check selected tables, not all of them
-                    for (Int16 j = 0; j < lTables.Count; j++)
+                    for (Int16 jj = 0; jj < lTables.Count; jj++)
                         //Not checking itself
-                        if (i != j && TableDependancy.TableDependancy.Contains(lTables[j]))
+                        if (ii != jj && TableDependancy.TableDependancy.Contains(lTables[jj]))
                         {
-                            TableOrden[i, j] = 1;
+                            TableOrder[ii, jj] = 1;
                             ReferenceCount++;
                         }
+                
+                //Store results in arrays (to be sorted later)
+                ReferenceCountArray[ii] = ReferenceCount;
+                RowOrderArray[ii] = ii;
+            }
 
-                //[i,i] positions will store the reference count, to save space.
-                TableOrden[i, i] = ReferenceCount;
-            }           
+            #endregion
 
-            return lTables;
+            #region Ordering Arrays and Solving conflicts
+
+            //RowOrder must be sorted by Reference Count. Less reference count, less dependancy.
+            //Equal Reference Count checked by reference between tied ones.
+            Array.Sort(ReferenceCountArray, RowOrderArray);
+
+            //--> Row Order Array now contains the Ordered sequence of values by Reference Count.
+
+            List<String> OrderedList = new List<String>();
+
+            //Order the list.
+            Int16 i = 0, j = 0;           
+
+            //This procedure is a mess... If someone find a simple way email it to me --> fabrosell@gmail.com
+            //The biggest problem is solving ties on reference count...
+            while (i < lTables.Count)
+            {
+                IncrementI = true;
+
+                //Check for same dependency level
+                if (i < lTables.Count - 1)
+                {
+                    //More than one with same dependancy. Problem!
+                    if (ReferenceCountArray[i] == ReferenceCountArray[i + 1])
+                    {
+                        #region Code to Solve a Tie
+
+                        //Get the last position which has the same Reference Count
+                        j = i;
+                        while (ReferenceCountArray[j] == ReferenceCountArray[i] && j < lTables.Count - 1)
+                            j++;
+
+                        Int16[] SubGroupReference = new Int16[j - i + 1];
+                        Int16[] SubGroupOrder = new Int16[j - i + 1];
+
+                        //Interval of same Reference Counts starts on i and ends on j.
+                        //k goes by the reference counts
+                        for (Int16 k = i; k <= j; k++)
+                        {
+                            SubGroupReference[k - i] = 0;
+                            SubGroupOrder[k - i] = k;
+                            
+                            for (Int16 z = i; z <= j; z++)
+                            {
+                                SubGroupReference[k - i] += TableOrder[RowOrderArray[k], RowOrderArray[z]];
+                            }
+                        }
+
+                        //Ordering arrays
+                        Array.Sort(SubGroupReference, SubGroupOrder);
+
+                        //Now we have solved the conflict and we have the right dependancy order.
+                        for (Int16 y = 0; y < SubGroupOrder.Length; y++)
+                        {
+                            OrderedList.Add(lTables[RowOrderArray[SubGroupOrder[y]]]);
+                            i++;
+                        }
+
+                        IncrementI = false;
+
+                        #endregion
+                    }
+                    else
+                        OrderedList.Add(lTables[RowOrderArray[i]]);
+                }
+
+                if (IncrementI)
+                    i++;
+            }
+
+            #endregion
+
+            return OrderedList;
         }
 
     }
