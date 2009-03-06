@@ -1239,9 +1239,10 @@ namespace Suru.InsertGenerator.BusinessLogic
                 if (bEndInsertionDependant)
                 {
                     sw_insert.WriteLine();
-                    sw_insert.WriteLine("Set Identity_Insert " + TableName + " Off;");
-                    sw_insert.WriteLine();
+                    sw_insert.WriteLine("Set Identity_Insert " + TableName + " Off;");                    
                 }
+
+                sw_insert.WriteLine();
             }
 
             #region Finalizing transactional script (if apply)
@@ -1381,6 +1382,12 @@ namespace Suru.InsertGenerator.BusinessLogic
             return sb.ToString();            
         }
         
+        /// <summary>
+        /// Sort de tables by its dependancy. Less dependant ones first, most dependants last.
+        /// </summary>
+        /// <param name="lTables">Table list to order.</param>
+        /// <param name="DBConnection">Connection object.</param>
+        /// <returns>Ordered list of tables by its dependancy.</returns>
         private List<String> SortTablesByDependancy(List<String> lTables, Connection DBConnection)
         {
             //Tables must be sorted by dependancy.
@@ -1461,7 +1468,7 @@ namespace Suru.InsertGenerator.BusinessLogic
 
                         //Get the last position which has the same Reference Count
                         j = i;
-                        while (ReferenceCountArray[j] == ReferenceCountArray[i] && j < lTables.Count - 1)
+                        while (j < lTables.Count - 1 && ReferenceCountArray[j] == ReferenceCountArray[j + 1])
                             j++;
 
                         Int16[] SubGroupReference = new Int16[j - i + 1];
@@ -1480,6 +1487,25 @@ namespace Suru.InsertGenerator.BusinessLogic
                             }
                         }
 
+                        /*
+                        //Writes the tables to a file (this is to check dependancy order)
+                        StreamWriter sw = new StreamWriter(@"c:\matrix.txt");
+                        for (Int32 ii = 0; ii < lTables.Count; ii++)
+                        {
+                            sw.Write(lTables[ii]);
+                            sw.Write('\t');
+
+                            for (Int32 jj = 0; jj < lTables.Count; jj++)
+                            {
+                                sw.Write(TableOrder[ii, jj]);
+                                sw.Write('\t');
+                            }
+
+                            sw.WriteLine();
+                        }
+                        sw.Close();
+                        */
+
                         //Ordering arrays
                         Array.Sort(SubGroupReference, SubGroupOrder);
 
@@ -1497,6 +1523,8 @@ namespace Suru.InsertGenerator.BusinessLogic
                     else
                         OrderedList.Add(lTables[RowOrderArray[i]]);
                 }
+                else
+                    OrderedList.Add(lTables[RowOrderArray[i]]);
 
                 if (IncrementI)
                     i++;
