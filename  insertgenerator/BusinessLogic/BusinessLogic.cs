@@ -1072,6 +1072,7 @@ namespace Suru.InsertGenerator.BusinessLogic
             if (_GenOpts.LinesPerBlock == 0)
                 _GenOpts.LinesPerBlock = Int32.Parse(ConfigurationManager.AppSettings.Get("LinesPerBlock"));
 
+            //Heaviest method to order tables. Execution with 705 tables took 0.48 seconds average.
             lTables = SortTablesByDependancy(lTables, _DBConnection);
 
             foreach (String TableName in lTables)
@@ -1285,6 +1286,7 @@ namespace Suru.InsertGenerator.BusinessLogic
         private String GenerateHeaderSentence(List<Columns> lColumns, String TableName, Nullable<Int32> Rows, Boolean bIsInsert)
         {
             StringBuilder sb = new StringBuilder();
+            Int16 NotIncludedColumns = 0;
 
             if (bIsInsert)
             {
@@ -1316,6 +1318,11 @@ namespace Suru.InsertGenerator.BusinessLogic
                     sb.Append(c.Name);
                     sb.Append(",");
                 }
+                else
+                {
+                    if (dDataTypes[c.Type] != DataTypes.NotIncluded && dDataTypes[c.Type] != DataTypes.Ignored && !c.OmitColumn)
+                        NotIncludedColumns++;
+                }
 
                 //Dates must be converted to ISO format before processing.
                 if (dDataTypes[c.Type] == DataTypes.Dates)
@@ -1336,7 +1343,7 @@ namespace Suru.InsertGenerator.BusinessLogic
                         sb.Append(",");
                     }
                 }
-            }
+            }            
 
             //Remove the last comma separator
             sb.Remove(sb.Length - 1, 1);
@@ -1347,6 +1354,13 @@ namespace Suru.InsertGenerator.BusinessLogic
             {
                 sb.Append(" From ");
                 sb.Append(TableName);
+                sb.Append(";");
+            }
+
+            //If amount of not included columns is equal to number of columns return nothing.
+            if (NotIncludedColumns == lColumns.Count)
+            {
+                sb = new StringBuilder();
                 sb.Append(";");
             }
 
@@ -1390,6 +1404,10 @@ namespace Suru.InsertGenerator.BusinessLogic
         /// <returns>Ordered list of tables by its dependancy.</returns>
         private List<String> SortTablesByDependancy(List<String> lTables, Connection DBConnection)
         {
+            Stopwatch stw = new Stopwatch();
+
+            stw.Start();
+
             //Tables must be sorted by dependancy.
             //E.g.: less or none dependant table first. Most dependant table last.
 
@@ -1407,9 +1425,9 @@ namespace Suru.InsertGenerator.BusinessLogic
 
             #region Generate Dependancy Table Graph
 
-            for (Int16 ii = 0; ii < lTables.Count; ii++)
+            for (Int16 i = 0; i < lTables.Count; i++)
             {
-                tablename = lTables[ii];
+                tablename = lTables[i];
                 TableDependancy = new DependancyList();
                 TableDependancy.TableName = tablename;
                 TableDependancy.TableDependancy = DBConnection.ListTableDependancy(tablename);
@@ -1418,11 +1436,32 @@ namespace Suru.InsertGenerator.BusinessLogic
 
                 if (TableDependancy.TableDependancy != null)
                     //Only check selected tables, not all of them
-                    for (Int16 jj = 0; jj < lTables.Count; jj++)
+                    for (Int16 j = 0; j < lTables.Count; j++)
                         //Not checking itself
-                        if (ii != jj && TableDependancy.TableDependancy.Contains(lTables[jj]))
-                            TableOrder[ii, jj] = 1;                
+                        if (i != j && TableDependancy.TableDependancy.Contains(lTables[j]))
+                            TableOrder[i, j] = 1;                
             }
+
+            /*
+             
+            //This code is for dumping the table content into a file
+             
+            //Writing table into a file
+            StreamWriter sw = new StreamWriter(@"c:\matrix.txt");
+
+            for (Int16 i = 0; i < lTables.Count; i++)
+            {
+                for (Int16 j = 0; j < lTables.Count; j++)
+                {
+                    sw.Write(TableOrder[i, j].ToString());
+                    sw.Write('\t');
+                }
+
+                sw.WriteLine();
+            }
+
+            sw.Close();
+            */ 
 
             #endregion
 
@@ -1436,102 +1475,22 @@ namespace Suru.InsertGenerator.BusinessLogic
             for (Int16 i = 0; i < lTables.Count; i++)
                 OrderedList.Add(lTables[CorrectOrder[i]]);
 
-
-            #region Old Code that works fine but ordering method is wrong.
-
-            /*
-            //Order the list.
-            Int16 i = 0, j = 0;           
-
-            //This procedure is a mess... If someone find a simple way email it to me --> fabrosell@gmail.com
-            //The biggest problem is solving ties on reference count...
-            while (i < lTables.Count)
-            {
-                IncrementI = true;
-
-                //Check for same dependency level
-                if (i < lTables.Count - 1)
-                {
-                    //More than one with same dependancy. Problem!
-                    if (ReferenceCountArray[i] == ReferenceCountArray[i + 1])
-                    {
-                        #region Code to Solve a Tie
-
-                        //Get the last position which has the same Reference Count
-                        j = i;
-                        while (j < lTables.Count - 1 && ReferenceCountArray[j] == ReferenceCountArray[j + 1])
-                            j++;
-
-                        Int16[] SubGroupReference = new Int16[j - i + 1];
-                        Int16[] SubGroupOrder = new Int16[j - i + 1];
-
-                        //Interval of same Reference Counts starts on i and ends on j.
-                        //k goes by the reference counts
-                        for (Int16 k = i; k <= j; k++)
-                        {
-                            SubGroupReference[k - i] = 0;
-                            SubGroupOrder[k - i] = k;
-                            
-                            for (Int16 z = i; z <= j; z++)
-                            {
-                                SubGroupReference[k - i] += TableOrder[RowOrderArray[k], RowOrderArray[z]];
-                            }
-                        }
-
-                        /*
-                        //Writes the tables to a file (this is to check dependancy order)
-                        StreamWriter sw = new StreamWriter(@"c:\matrix.txt");
-                        for (Int32 ii = 0; ii < lTables.Count; ii++)
-                        {
-                            sw.Write(lTables[ii]);
-                            sw.Write('\t');
-
-                            for (Int32 jj = 0; jj < lTables.Count; jj++)
-                            {
-                                sw.Write(TableOrder[ii, jj]);
-                                sw.Write('\t');
-                            }
-
-                            sw.WriteLine();
-                        }
-                        sw.Close();
-                        * /
-
-                        //Ordering arrays
-                        Array.Sort(SubGroupReference, SubGroupOrder);
-
-                        //Now we have solved the conflict and we have the right dependancy order.
-                        for (Int16 y = 0; y < SubGroupOrder.Length; y++)
-                        {
-                            OrderedList.Add(lTables[RowOrderArray[SubGroupOrder[y]]]);
-                            i++;
-                        }
-
-                        IncrementI = false;
-
-                        #endregion
-                    }
-                    else
-                        OrderedList.Add(lTables[RowOrderArray[i]]);
-                }
-                else
-                    OrderedList.Add(lTables[RowOrderArray[i]]);
-
-                if (IncrementI)
-                    i++;
-            }
-            */ 
-
             #endregion
 
-            #endregion
+            stw.Stop();
+
+            Console.WriteLine("Elapsed time to order " + lTables.Count + " tables: " + stw.Elapsed);
 
             return OrderedList;
         }
 
-
-        //This methods must be replaced with his versions from program.cs
-        private Int16[] OrderGraph(Int16[,] TableOrder, Int16 TableNumber)
+        /// <summary>
+        /// Order a graph. Return results in an array (indirect index to right one).
+        /// </summary>
+        /// <param name="TableOrder">Dependancy matrix.</param>
+        /// <param name="TableNumber">Number of tables.</param>
+        /// <returns>Ordered array.</returns>
+        private static Int16[] OrderGraph(Int16[,] TableOrder, Int16 TableNumber)
         {
             //This method will process the graph and order the tables
             //The ordering method here working is the "topological sort"
@@ -1541,13 +1500,12 @@ namespace Suru.InsertGenerator.BusinessLogic
             //If some tables have a circular-reference, data could not be inserted, so they will be empty. 
             //I won't take care of them because order of them doesn't matter (no data tables).
 
-            Int16[] CorrectOrder = new Int16[TableNumber];            
+            Int16[] CorrectOrder = new Int16[TableNumber];
             List<Int16> NotProcessed = new List<Int16>();
             Int16 PredecessorCount, SuccessorCount;
 
             //This arrays will be the criteria to order
             Int16[,] LinkTable = new Int16[TableNumber, 2];
-
 
             Int16[] OrderedRank = new Int16[TableNumber];
             Int16[] PredecessorRank = new Int16[TableNumber];
@@ -1573,52 +1531,83 @@ namespace Suru.InsertGenerator.BusinessLogic
             }
 
             Array.Sort(PredecessorRank, OrderedRank);
-            Int16 Index, LastOrderedNode = 0;
+            Int16 Index = 0, LastOrderedNode = 0;
 
             //Orders the graph
+            /*
             while (NotProcessed.Count != 0)
             {
-                Index = 0;
-
                 //Find next node to process
-                while (Index < TableNumber && !NotProcessed.Contains(OrderedRank[Index]))
+                while ( Index < TableNumber  && !NotProcessed.Contains(OrderedRank[Index]))
                     Index++;
 
                 //Recursive, long method, to order array
-                ProcessNode(Index, ref LastOrderedNode, ref TableOrder, ref LinkTable, ref OrderedRank, ref PredecessorRank, ref TableNumber, ref NotProcessed, ref CorrectOrder);
+                ProcessNode(OrderedRank[Index], ref LastOrderedNode, ref TableOrder, ref LinkTable, ref TableNumber, ref NotProcessed, ref CorrectOrder);
+                
+                Index++;
+            }
+            */
+
+            while (NotProcessed.Count != 0)
+            {
+                for (Int16 i = 0; i < TableNumber; i++)
+                {
+                    if (NotProcessed.Contains(OrderedRank[i]))
+                        ProcessNode(OrderedRank[i], ref LastOrderedNode, ref TableOrder, ref LinkTable, ref TableNumber, ref NotProcessed, ref CorrectOrder);
+                }
+                Console.WriteLine("Cycle completed...");
             }
 
             return CorrectOrder;
         }
 
-        private void ProcessNode(Int16 Index, ref Int16 LastOrderedNode, ref Int16[,] TableOrder, ref Int16[,] LinkTable, ref Int16[] OrderedRank, ref Int16[] PredecessorRank, ref Int16 TableNumber, ref List<Int16> NotProcessed, ref Int16[] CorrectOrder)
+        /// <summary>
+        /// Process the graph nodes, to list them in right order.
+        /// </summary>
+        /// <param name="Index">Node to analize.</param>
+        /// <param name="LastOrderedNode">Last correctly ordered node.</param>
+        /// <param name="TableOrder">Table Order matrix.</param>
+        /// <param name="LinkTable">Precedessors and succesors count.</param>
+        /// <param name="TableNumber">Number of tables.</param>
+        /// <param name="NotProcessed">Unprocessed node list.</param>
+        /// <param name="CorrectOrder">Array ordered to the moment of the method call.</param>
+        private static void ProcessNode(Int16 Index, ref Int16 LastOrderedNode, ref Int16[,] TableOrder, ref Int16[,] LinkTable, ref Int16 TableNumber, ref List<Int16> NotProcessed, ref Int16[] CorrectOrder)
         {
-            if (NotProcessed.Contains(OrderedRank[Index]) && NotProcessed.Count != 0)
+            if (NotProcessed.Contains(Index) && NotProcessed.Count != 0)
             {
                 Boolean OrderNode = false;
 
-                if (PredecessorRank[Index] == 0)
+                if (LinkTable[Index, 0] == 0)
                     OrderNode = true;
                 else
                 {
+                    //Let's assume order node is the right one.
+                    OrderNode = true;
+
                     //Check its dependencies
                     for (Int16 i = 0; i < TableNumber; i++)
-                        if (TableOrder[OrderedRank[Index], i] == 1)
+                        if (TableOrder[Index, i] == 1)
                             //If dependant node is not processed, abort checking
                             if (NotProcessed.Contains(i))
+                            {
+                                //Ops! A required predeccessor is not present in list...
+                                OrderNode = false;
                                 break;
+                            }
+
                 }
 
+                //Process node and child nodes if node is to order
                 if (OrderNode)
                 {
-                    CorrectOrder[LastOrderedNode] = OrderedRank[Index];
+                    CorrectOrder[LastOrderedNode] = Index;
                     LastOrderedNode++;
-                    NotProcessed.Remove(OrderedRank[Index]);
+                    NotProcessed.Remove(Index);
 
                     //Process the childs recursively
                     for (Int16 i = 0; i < TableNumber; i++)
-                        if (TableOrder[OrderedRank[i], OrderedRank[Index]] == 1 && NotProcessed.Contains(OrderedRank[i]))
-                            ProcessNode(OrderedRank[i], ref LastOrderedNode, ref TableOrder, ref LinkTable, ref OrderedRank, ref PredecessorRank, ref TableNumber, ref NotProcessed, ref CorrectOrder);
+                        if (TableOrder[i, Index] == 1 && NotProcessed.Contains(i))
+                            ProcessNode(i, ref LastOrderedNode, ref TableOrder, ref LinkTable, ref TableNumber, ref NotProcessed, ref CorrectOrder);
                 }
             }
         }
