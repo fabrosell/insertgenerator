@@ -1320,7 +1320,7 @@ namespace Suru.InsertGenerator.BusinessLogic
                 }
                 else
                 {
-                    if (dDataTypes[c.Type] != DataTypes.NotIncluded && dDataTypes[c.Type] != DataTypes.Ignored && !c.OmitColumn)
+                    if (dDataTypes[c.Type] == DataTypes.NotIncluded || dDataTypes[c.Type] == DataTypes.Ignored || c.OmitColumn)
                         NotIncludedColumns++;
                 }
 
@@ -1531,31 +1531,13 @@ namespace Suru.InsertGenerator.BusinessLogic
             }
 
             Array.Sort(PredecessorRank, OrderedRank);
-            Int16 Index = 0, LastOrderedNode = 0;
+            Int16 /*Index = 0,*/ LastOrderedNode = 0;
 
             //Orders the graph
-            /*
-            while (NotProcessed.Count != 0)
+            for (Int16 i = 0; i < TableNumber; i++)
             {
-                //Find next node to process
-                while ( Index < TableNumber  && !NotProcessed.Contains(OrderedRank[Index]))
-                    Index++;
-
-                //Recursive, long method, to order array
-                ProcessNode(OrderedRank[Index], ref LastOrderedNode, ref TableOrder, ref LinkTable, ref TableNumber, ref NotProcessed, ref CorrectOrder);
-                
-                Index++;
-            }
-            */
-
-            while (NotProcessed.Count != 0)
-            {
-                for (Int16 i = 0; i < TableNumber; i++)
-                {
-                    if (NotProcessed.Contains(OrderedRank[i]))
-                        ProcessNode(OrderedRank[i], ref LastOrderedNode, ref TableOrder, ref LinkTable, ref TableNumber, ref NotProcessed, ref CorrectOrder);
-                }
-                Console.WriteLine("Cycle completed...");
+                if (NotProcessed.Contains(OrderedRank[i]))
+                    ProcessNode(OrderedRank[i], ref LastOrderedNode, ref TableOrder, ref LinkTable, ref TableNumber, ref NotProcessed, ref CorrectOrder);
             }
 
             return CorrectOrder;
