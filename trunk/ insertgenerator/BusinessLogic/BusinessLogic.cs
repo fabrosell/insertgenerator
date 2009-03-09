@@ -1291,7 +1291,9 @@ namespace Suru.InsertGenerator.BusinessLogic
             if (bIsInsert)
             {
                 sb.Append("Insert Into ");
+                sb.Append("\"");
                 sb.Append(TableName);
+                sb.Append("\"");
                 sb.Append("(");
             }
             else
@@ -1315,7 +1317,9 @@ namespace Suru.InsertGenerator.BusinessLogic
                 //Ignored and Not included data types won't be selected.
                 if (dDataTypes[c.Type] != DataTypes.NotIncluded && dDataTypes[c.Type] != DataTypes.Ignored && !c.OmitColumn && dDataTypes[c.Type] != DataTypes.Dates)
                 {
+                    sb.Append("\"");
                     sb.Append(c.Name);
+                    sb.Append("\"");
                     sb.Append(",");
                 }
                 else
@@ -1329,17 +1333,23 @@ namespace Suru.InsertGenerator.BusinessLogic
                 {
                     if (bIsInsert)
                     {
+                        sb.Append("\"");
                         sb.Append(c.Name);
+                        sb.Append("\"");
                         sb.Append(",");
                     }
                     else
                     {
                         sb.Append("Convert(VarChar, ");
+                        sb.Append("\"");
                         sb.Append(c.Name);
+                        sb.Append("\"");
                         sb.Append(", ");
                         sb.Append(DateFormatStyle);
                         sb.Append(") As ");
+                        sb.Append("\"");
                         sb.Append(c.Name);
+                        sb.Append("\"");
                         sb.Append(",");
                     }
                 }
@@ -1353,7 +1363,9 @@ namespace Suru.InsertGenerator.BusinessLogic
             else
             {
                 sb.Append(" From ");
+                sb.Append("\"");
                 sb.Append(TableName);
+                sb.Append("\"");
                 sb.Append(";");
             }
 
