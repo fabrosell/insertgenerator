@@ -22,6 +22,10 @@ namespace Suru.InsertGenerator.GeneradorUI
         private const String TableColumnName = "[Table]";
         private frmConnectServer OriginalParent;
         public GenerationOptions gGenOptions = new GenerationOptions();
+        private Boolean LoadingForm;
+
+        //Worker thread
+        private Thread WorkThread = null;
 
         #endregion
 
@@ -40,39 +44,45 @@ namespace Suru.InsertGenerator.GeneradorUI
             InitializeComponent();
         }
 
-        //Load Event Handler
-        private void frmInserts_Load(object sender, EventArgs e)
-        {
-            this.Text = "Suru SQL Insert Generator - v." + Application.ProductVersion;
-
-            Load_Form();
-        }
-
         /// <summary>
         /// This method initializes the database / tables form
         /// </summary>
         private void Load_Form()
         {
-            if (ConfigurationManager.AppSettings.Get("LastDirectoryUsed") == "")
+            this.Invoke((MethodInvoker)delegate()
             {
-                lblOutputPath.Text = Application.StartupPath;
-                Update_Last_Path_Used(Application.StartupPath);
+                LoadingForm = true;
+                BlockControls(true);
+
+                if (ConfigurationManager.AppSettings.Get("LastDirectoryUsed") == "")
+                {
+                    lblOutputPath.Text = Application.StartupPath;
+                    Update_Last_Path_Used(Application.StartupPath);
+                }
+                else
+                    lblOutputPath.Text = ConfigurationManager.AppSettings.Get("LastDirectoryUsed");
+
+                cmbDataBase.Items.Clear();
+
+                //Load DataBases in ComboBox
+                foreach (String s in DBConnection.DataBases)
+                    cmbDataBase.Items.Add(s);
+
+                cmbDataBase.SelectedIndex = cmbDataBase.FindString(DBConnection.Last_DataBase);
+
+                BlockControls(false);
             }
-            else
-                lblOutputPath.Text = ConfigurationManager.AppSettings.Get("LastDirectoryUsed");
-
-            cmbDataBase.Items.Clear();
-
-            //Load DataBases in ComboBox
-            foreach (String s in DBConnection.DataBases)
-                cmbDataBase.Items.Add(s);
-
-            cmbDataBase.SelectedIndex = cmbDataBase.FindString(DBConnection.Last_DataBase);
+            );
 
             //Load the database tables
             Load_DataBase_Tables();
 
-            UpdateForm();            
+            UpdateForm();
+
+            LoadingForm = false;
+
+            if (WorkThread != null)
+                WorkThread = null;
         }
 
         /// <summary>
@@ -97,7 +107,13 @@ namespace Suru.InsertGenerator.GeneradorUI
         /// </summary>
         private void Load_DataBase_Tables()
         {
-            DBConnection.Last_DataBase = cmbDataBase.Text;
+            this.Invoke((MethodInvoker)delegate()
+            {
+                BlockControls(true);
+
+                DBConnection.Last_DataBase = cmbDataBase.Text;
+            }
+            );
 
             TableList = DBConnection.ListDatabaseTables();
 
@@ -106,27 +122,35 @@ namespace Suru.InsertGenerator.GeneradorUI
                 //If there is any table, load the Results
                 if (TableList.Count != 0)
                 {
-                    if (dgvTables.Columns.Count == 0)
+                    this.Invoke((MethodInvoker)delegate()
                     {
-                        DataGridViewCheckBoxColumn dchkColumn = new DataGridViewCheckBoxColumn();
-                        dchkColumn.Name = CheckBoxColumnName;
-                        dchkColumn.HeaderText = "Select";
-                        dchkColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-                        dgvTables.Columns.Add(dchkColumn);
+                        if (dgvTables.Columns.Count == 0)
+                        {
+                            DataGridViewCheckBoxColumn dchkColumn = new DataGridViewCheckBoxColumn();
+                            dchkColumn.Name = CheckBoxColumnName;
+                            dchkColumn.HeaderText = "Select";
+                            dchkColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                            dgvTables.Columns.Add(dchkColumn);
 
-                        DataGridViewTextBoxColumn dtxtColumn = new DataGridViewTextBoxColumn();
-                        dtxtColumn.Name = TableColumnName;
-                        dtxtColumn.ReadOnly = true;
-                        dtxtColumn.HeaderText = "Table";                        
-                        dgvTables.Columns.Add(dtxtColumn);
+                            DataGridViewTextBoxColumn dtxtColumn = new DataGridViewTextBoxColumn();
+                            dtxtColumn.Name = TableColumnName;
+                            dtxtColumn.ReadOnly = true;
+                            dtxtColumn.HeaderText = "Table";
+                            dgvTables.Columns.Add(dtxtColumn);
 
-                        dgvTables.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                            dgvTables.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                        }
                     }
+                    );
                 }
                 else
                     tssErrorMessage.Text = DBConnection.ErrorMessage;
 
-                dgvTables.Rows.Clear();
+                this.Invoke((MethodInvoker)delegate()
+                {
+                    dgvTables.Rows.Clear();
+                }
+                );
 
                 DataGridViewRow dr;
 
@@ -134,23 +158,40 @@ namespace Suru.InsertGenerator.GeneradorUI
                 Int32 iNumFila = 0;
                 foreach (String s in TableList)
                 {
-                    dr = new DataGridViewRow();
-                    dgvTables.Rows.Add(dr);                    
-                    
-                    dgvTables.Rows[iNumFila].Cells[CheckBoxColumnName] = new DataGridViewCheckBoxCell();
-                    dgvTables.Rows[iNumFila].Cells[CheckBoxColumnName].Value = false;
+                    this.Invoke((MethodInvoker)delegate()
+                    {
+                        dr = new DataGridViewRow();
+                        dgvTables.Rows.Add(dr);
 
-                    dgvTables.Rows[iNumFila].Cells[TableColumnName] = new DataGridViewTextBoxCell();
-                    dgvTables.Rows[iNumFila].Cells[TableColumnName].Value = s;
+                        dgvTables.Rows[iNumFila].Cells[CheckBoxColumnName] = new DataGridViewCheckBoxCell();
+                        dgvTables.Rows[iNumFila].Cells[CheckBoxColumnName].Value = false;
+
+                        dgvTables.Rows[iNumFila].Cells[TableColumnName] = new DataGridViewTextBoxCell();
+                        dgvTables.Rows[iNumFila].Cells[TableColumnName].Value = s;
+                    }
+                    );
 
                     iNumFila++;
-               }
+                }
             }
             else
             {
-                dgvTables.Rows.Clear();
-                UpdateForm();
+                this.Invoke((MethodInvoker)delegate()
+                {
+                    dgvTables.Rows.Clear();
+                    UpdateForm();
+                }
+                );
             }
+
+            this.Invoke((MethodInvoker)delegate()
+            {
+                BlockControls(false);
+            }
+            );
+
+            if (WorkThread != null)
+                WorkThread = null;
         }
 
         /// <summary>
@@ -167,49 +208,57 @@ namespace Suru.InsertGenerator.GeneradorUI
             ConfigurationFile.Save();
         }
 
-        #endregion
-
-        #region Events
-
-        //When the Selected Database changes, Table DataGrid must be reloaded.
-        private void cmbDataBase_SelectedIndexChanged(object sender, EventArgs e)
+        /// <summary>
+        /// Block and release the form controls.
+        /// </summary>
+        /// <param name="bLock">True: disable controls. False: enable controls.</param>
+        private void BlockControls(Boolean bLock)
         {
-            Load_DataBase_Tables();
-            dgvTables.Focus();
+            cmbDataBase.Enabled = !bLock;
+            btnChangePath.Enabled = !bLock;
+            btnChangeConnection.Enabled = !bLock;
+            chkSelectAll.Enabled = !bLock;
+            btnGenerateInserts.Enabled = !bLock;
+            btnOptions.Enabled = !bLock;
 
-            chkSelectAll.Checked = false;
+            //Cannot block grid for some reason...
+            //dgvTables.Enabled = !bLock;
         }
 
-        //When form is closing, parent and current form must be disposed
-        private void frmInserts_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            OriginalParent.Dispose();
-            this.Dispose();
-        }
-
-        //Generate Insert Button Event Handler
-        private void btnGenerateInserts_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Generates the inserts
+        /// </summary>
+        private void Generate_Inserts()
         {
             List<String> lTablesToGenerate = new List<String>();
+            String OutputPath = null;
 
-            //Getting checked rows from table
-            DataGridViewCheckBoxCell dchk;
-            foreach (DataGridViewRow dr in dgvTables.Rows)
+            this.Invoke((MethodInvoker)delegate()
             {
-                dchk = (DataGridViewCheckBoxCell)dr.Cells[CheckBoxColumnName];
+                BlockControls(true);
 
-                if ((Boolean)dchk.Value)
-                    lTablesToGenerate.Add((String)dr.Cells[TableColumnName].Value);
+                //Getting checked rows from table
+                DataGridViewCheckBoxCell dchk;
+                foreach (DataGridViewRow dr in dgvTables.Rows)
+                {
+                    dchk = (DataGridViewCheckBoxCell)dr.Cells[CheckBoxColumnName];
+
+                    if ((Boolean)dchk.Value)
+                        lTablesToGenerate.Add((String)dr.Cells[TableColumnName].Value);
+                }
+
+                //You must select tables message.
+                if (lTablesToGenerate.Count == 0)
+                {
+                    MessageBox.Show("You must select one or more tables to Generate Inserts", "No tables selected", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    dgvTables.Focus();
+                    return;
+                }
+
+                OutputPath = lblOutputPath.Text;
             }
+            );
 
-            //You must select tables message.
-            if (lTablesToGenerate.Count == 0)
-            {
-                MessageBox.Show("You must select one or more tables to Generate Inserts", "No tables selected", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                dgvTables.Focus();
-                return;
-            }  
-          
             /*
              *  Options to generation:
              * 
@@ -235,25 +284,102 @@ namespace Suru.InsertGenerator.GeneradorUI
              */
 
             //Generate the Inserts
-            SQLGeneration ScriptGenerator = new SQLGeneration(DBConnection, gGenOptions, lblOutputPath.Text);
+            SQLGeneration ScriptGenerator = new SQLGeneration(DBConnection, gGenOptions, OutputPath);
 
             //Method will return true if graph has cycles
             if (!ScriptGenerator.GenerateInserts(lTablesToGenerate))
                 MessageBox.Show("Scripts Generated succesfully!", "Generation End", MessageBoxButtons.OK, MessageBoxIcon.Information);
             else
                 MessageBox.Show("Data tables has cycles. Table order could not be the right one.", "Generation End with Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+
+            BlockControls(false);
+
+            if (WorkThread != null)
+                WorkThread = null;
         }
 
-        //Select All Event Handler
-        private void chkSelectAll_CheckedChanged(object sender, EventArgs e)
+        /// <summary>
+        /// Selects or unselects all tables listed in tables' data grid view.
+        /// </summary>
+        private void SelectAllTables()
         {
+            //Cannot block controls due to graphical issue...
+            //Cell is correctly checked on / off when "select all" changed...
+            //but system selected cell won't show it.
+
+            //BlockControls(true);
+
             DataGridViewCheckBoxCell dchk;
 
             foreach (DataGridViewRow dr in dgvTables.Rows)
             {
                 dchk = (DataGridViewCheckBoxCell)dr.Cells[CheckBoxColumnName];
                 dchk.Value = chkSelectAll.Checked;
+            }            
+
+            //BlockControls(false);
+        }
+
+        #endregion
+
+        #region Events
+
+        //Load Event Handler
+        private void frmInserts_Load(object sender, EventArgs e)
+        {
+            this.Text = "Suru SQL Insert Generator - v." + Application.ProductVersion;
+
+            ThreadStart ts = new ThreadStart(Load_Form);
+            WorkThread = new Thread(ts);
+            WorkThread.Start();
+
+            //Load_Form();
+        }
+
+        //When the Selected Database changes, Table DataGrid must be reloaded.
+        private void cmbDataBase_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!LoadingForm)
+            {
+                ThreadStart ts = new ThreadStart(Load_DataBase_Tables);
+                WorkThread = new Thread(ts);
+                WorkThread.Start();
+
+                //Load_DataBase_Tables();
+                dgvTables.Focus();
+
+                chkSelectAll.Checked = false;
             }
+        }
+
+        //When form is closing, parent and current form must be disposed
+        private void frmInserts_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (WorkThread == null)
+            {
+                OriginalParent.Dispose();
+                this.Dispose();
+            }
+            else
+            {
+                MessageBox.Show("Cannot close application while an operation is in progress.", "Please wait for completion", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                e.Cancel = true;
+            }
+        }
+
+        //Generate Insert Button Event Handler
+        private void btnGenerateInserts_Click(object sender, EventArgs e)
+        {
+            ThreadStart ts = new ThreadStart(Generate_Inserts);
+            WorkThread = new Thread(ts);
+            WorkThread.Start();
+        }
+
+        //Select All Event Handler
+        private void chkSelectAll_CheckedChanged(object sender, EventArgs e)
+        {
+            SelectAllTables();
         }
 
         //Generating Options
@@ -296,9 +422,14 @@ namespace Suru.InsertGenerator.GeneradorUI
         {
             frmConnectServer frmChangeConnection = new frmConnectServer(this);            
             frmChangeConnection.ShowDialog();
-            Load_Form();
-        }
 
+            ThreadStart ts = new ThreadStart(Load_Form);
+            WorkThread = new Thread(ts);
+            WorkThread.Start();
+
+            //Load_Form();
+        }
+       
         #endregion
     }
 }
