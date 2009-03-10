@@ -167,7 +167,7 @@ namespace Suru.InsertGenerator.GeneradorUI
                         dgvTables.Rows[iNumFila].Cells[CheckBoxColumnName].Value = false;
 
                         dgvTables.Rows[iNumFila].Cells[TableColumnName] = new DataGridViewTextBoxCell();
-                        dgvTables.Rows[iNumFila].Cells[TableColumnName].Value = s;
+                        dgvTables.Rows[iNumFila].Cells[TableColumnName].Value = s;                        
                     }
                     );
 
@@ -429,7 +429,23 @@ namespace Suru.InsertGenerator.GeneradorUI
 
             //Load_Form();
         }
-       
+
+        //Enter and select over selected row
+        private void dgvTables_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter || e.KeyCode == Keys.Space)
+                if (dgvTables.SelectedRows != null)
+                {
+                    DataGridViewCheckBoxCell dchk;
+
+                    foreach (DataGridViewRow dr in dgvTables.SelectedRows)
+                    {
+                        dchk = (DataGridViewCheckBoxCell)dr.Cells[CheckBoxColumnName];
+                        dchk.Value = !(Boolean)dchk.Value;
+                    }
+                }
+        }       
+
         #endregion
     }
 }

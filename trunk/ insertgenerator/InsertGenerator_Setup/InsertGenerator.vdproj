@@ -15,32 +15,32 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_35430BEDE1404278765BA261DD628F69"
+        "MsmKey" = "8:_4CF982BDEDD8FB525C6AE97F900CCAC3"
         "OwnerKey" = "8:_BCE73E6B953D4FB4A00BA44A3759381B"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_69A68BD2B9C7E0CA67B759DE46D26F8F"
+        "OwnerKey" = "8:_7B45EA45D86C4ABAA4EBCFFBD1A3D769"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_69A68BD2B9C7E0CA67B759DE46D26F8F"
+        "OwnerKey" = "8:_BCE73E6B953D4FB4A00BA44A3759381B"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_69A68BD2B9C7E0CA67B759DE46D26F8F"
+        "OwnerKey" = "8:_4CF982BDEDD8FB525C6AE97F900CCAC3"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_7B45EA45D86C4ABAA4EBCFFBD1A3D769"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_866DAF096EA838D4B5C8E48D52DC5F6A"
-        "OwnerKey" = "8:_7B45EA45D86C4ABAA4EBCFFBD1A3D769"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_866DAF096EA838D4B5C8E48D52DC5F6A"
-        "OwnerKey" = "8:_35430BEDE1404278765BA261DD628F69"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_866DAF096EA838D4B5C8E48D52DC5F6A"
-        "OwnerKey" = "8:_BCE73E6B953D4FB4A00BA44A3759381B"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -52,6 +52,12 @@
         "Entry"
         {
         "MsmKey" = "8:_BCE73E6B953D4FB4A00BA44A3759381B"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_D0ACBA35FBF64CBEBB056035015090A1"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -70,7 +76,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_35430BEDE1404278765BA261DD628F69"
+        "OwnerKey" = "8:_4CF982BDEDD8FB525C6AE97F900CCAC3"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -82,7 +88,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_866DAF096EA838D4B5C8E48D52DC5F6A"
+        "OwnerKey" = "8:_69A68BD2B9C7E0CA67B759DE46D26F8F"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -180,14 +186,14 @@
         }
         "File"
         {
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_35430BEDE1404278765BA261DD628F69"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_4CF982BDEDD8FB525C6AE97F900CCAC3"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Suru.InsertGenerator.BusinessLogic, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ff8d53d2ffa91156, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Suru.InsertGenerator.BusinessLogic, Version=1.0.2.0, Culture=neutral, PublicKeyToken=ff8d53d2ffa91156, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_35430BEDE1404278765BA261DD628F69"
+                    "_4CF982BDEDD8FB525C6AE97F900CCAC3"
                     {
                     "Name" = "8:Suru.InsertGenerator.BusinessLogic.dll"
                     "Attributes" = "3:512"
@@ -211,14 +217,14 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_866DAF096EA838D4B5C8E48D52DC5F6A"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_69A68BD2B9C7E0CA67B759DE46D26F8F"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
             "AssemblyAsmDisplayName" = "8:Suru.Common.EncryptionLibrary, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ff8d53d2ffa91156, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_866DAF096EA838D4B5C8E48D52DC5F6A"
+                    "_69A68BD2B9C7E0CA67B759DE46D26F8F"
                     {
                     "Name" = "8:Suru.Common.EncryptionLibrary.dll"
                     "Attributes" = "3:512"
@@ -240,6 +246,26 @@
             "Register" = "3:1"
             "Exclude" = "11:TRUE"
             "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_D0ACBA35FBF64CBEBB056035015090A1"
+            {
+            "SourcePath" = "8:..\\..\\..\\..\\..\\Escritorio\\Icon.ico"
+            "TargetName" = "8:Icon.ico"
+            "Tag" = "8:"
+            "Folder" = "8:_FADD7C6FE44C44CDB40800DE9F2B567E"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
         }
@@ -439,7 +465,7 @@
             "Target" = "8:_BCE73E6B953D4FB4A00BA44A3759381B"
             "Folder" = "8:_A1B65FBF5A124E1480D81AF862EEB1B9"
             "WorkingFolder" = "8:_FADD7C6FE44C44CDB40800DE9F2B567E"
-            "Icon" = "8:"
+            "Icon" = "8:_D0ACBA35FBF64CBEBB056035015090A1"
             "Feature" = "8:"
             }
             "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_BB610A1B024E4F5D89149BBEA7C050ED"
@@ -453,7 +479,7 @@
             "Target" = "8:_BCE73E6B953D4FB4A00BA44A3759381B"
             "Folder" = "8:_B30D42C4912F45EB90BFFF11808AF5B1"
             "WorkingFolder" = "8:_FADD7C6FE44C44CDB40800DE9F2B567E"
-            "Icon" = "8:"
+            "Icon" = "8:_D0ACBA35FBF64CBEBB056035015090A1"
             "Feature" = "8:"
             }
         }
@@ -941,7 +967,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_BCE73E6B953D4FB4A00BA44A3759381B"
             {
-            "SourcePath" = "8:..\\GeneradorInserts\\obj\\Debug\\Suru.InsertGenerator.GeneradorUI.exe"
+            "SourcePath" = "8:..\\InsertGenerator_UI\\obj\\Debug\\Suru.InsertGenerator.GeneradorUI.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_FADD7C6FE44C44CDB40800DE9F2B567E"
