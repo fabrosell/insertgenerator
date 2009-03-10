@@ -151,7 +151,6 @@ namespace Suru.InsertGenerator.GeneradorUI
                 dgvTables.Rows.Clear();
                 UpdateForm();
             }
-
         }
 
         /// <summary>
@@ -177,6 +176,8 @@ namespace Suru.InsertGenerator.GeneradorUI
         {
             Load_DataBase_Tables();
             dgvTables.Focus();
+
+            chkSelectAll.Checked = false;
         }
 
         //When form is closing, parent and current form must be disposed
@@ -236,9 +237,11 @@ namespace Suru.InsertGenerator.GeneradorUI
             //Generate the Inserts
             SQLGeneration ScriptGenerator = new SQLGeneration(DBConnection, gGenOptions, lblOutputPath.Text);
 
-            ScriptGenerator.GenerateInserts(lTablesToGenerate);
-
-            MessageBox.Show("Scripts Generated succesfully!", "Generation End", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            //Method will return true if graph has cycles
+            if (!ScriptGenerator.GenerateInserts(lTablesToGenerate))
+                MessageBox.Show("Scripts Generated succesfully!", "Generation End", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            else
+                MessageBox.Show("Data tables has cycles. Table order could not be the right one.", "Generation End with Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
         //Select All Event Handler
