@@ -76,12 +76,12 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvTables.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvTables.Location = new System.Drawing.Point(0, 129);
-            this.dgvTables.MultiSelect = false;
             this.dgvTables.Name = "dgvTables";
             this.dgvTables.RowHeadersVisible = false;
             this.dgvTables.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvTables.Size = new System.Drawing.Size(360, 313);
             this.dgvTables.TabIndex = 2;
+            this.dgvTables.KeyDown += new System.Windows.Forms.KeyEventHandler(this.dgvTables_KeyDown);
             // 
             // btnGenerateInserts
             // 
@@ -152,10 +152,13 @@
             // 
             // btnChangeConnection
             // 
+            this.btnChangeConnection.FlatAppearance.BorderSize = 0;
+            this.btnChangeConnection.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnChangeConnection.ForeColor = System.Drawing.Color.Transparent;
             this.btnChangeConnection.Image = ((System.Drawing.Image)(resources.GetObject("btnChangeConnection.Image")));
-            this.btnChangeConnection.Location = new System.Drawing.Point(314, 12);
+            this.btnChangeConnection.Location = new System.Drawing.Point(314, 10);
             this.btnChangeConnection.Name = "btnChangeConnection";
-            this.btnChangeConnection.Size = new System.Drawing.Size(34, 23);
+            this.btnChangeConnection.Size = new System.Drawing.Size(22, 23);
             this.btnChangeConnection.TabIndex = 7;
             this.btnChangeConnection.UseVisualStyleBackColor = true;
             this.btnChangeConnection.Click += new System.EventHandler(this.btnChangeConnection_Click);
@@ -181,11 +184,12 @@
             // btnChangePath
             // 
             this.btnChangePath.FlatAppearance.BorderSize = 0;
+            this.btnChangePath.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnChangePath.Image = ((System.Drawing.Image)(resources.GetObject("btnChangePath.Image")));
             this.btnChangePath.Location = new System.Drawing.Point(90, 42);
             this.btnChangePath.Name = "btnChangePath";
-            this.btnChangePath.Size = new System.Drawing.Size(34, 23);
+            this.btnChangePath.Size = new System.Drawing.Size(21, 23);
             this.btnChangePath.TabIndex = 10;
-            this.btnChangePath.Text = "&...";
             this.btnChangePath.UseVisualStyleBackColor = true;
             this.btnChangePath.Click += new System.EventHandler(this.btnChangePath_Click);
             // 
@@ -205,6 +209,7 @@
             this.Controls.Add(this.dgvTables);
             this.Controls.Add(this.lblDatabase);
             this.Controls.Add(this.cmbDataBase);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "frmInserts";
             this.Text = "Suru Insert Generator";
