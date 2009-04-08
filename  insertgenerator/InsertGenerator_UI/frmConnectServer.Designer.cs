@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmConnectServer));
             this.lblServer = new System.Windows.Forms.Label();
             this.lblLogin = new System.Windows.Forms.Label();
             this.cmbLogin = new System.Windows.Forms.ComboBox();
@@ -161,6 +162,7 @@
             this.Controls.Add(this.lblLogin);
             this.Controls.Add(this.lblServer);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.KeyPreview = true;
             this.MaximizeBox = false;
             this.Name = "frmConnectServer";
