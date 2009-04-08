@@ -57,7 +57,7 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_D0ACBA35FBF64CBEBB056035015090A1"
+        "MsmKey" = "8:_DDF6F63A080C4F70A1F74B9F6E7DEB32"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -190,14 +190,9 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Suru.InsertGenerator.BusinessLogic, Version=1.0.2.0, Culture=neutral, PublicKeyToken=ff8d53d2ffa91156, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Suru.InsertGenerator.BusinessLogic, Version=1.0.3.0, Culture=neutral, PublicKeyToken=ff8d53d2ffa91156, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_4CF982BDEDD8FB525C6AE97F900CCAC3"
-                    {
-                    "Name" = "8:Suru.InsertGenerator.BusinessLogic.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:Suru.InsertGenerator.BusinessLogic.dll"
             "TargetName" = "8:"
@@ -224,11 +219,6 @@
             "AssemblyAsmDisplayName" = "8:Suru.Common.EncryptionLibrary, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ff8d53d2ffa91156, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_69A68BD2B9C7E0CA67B759DE46D26F8F"
-                    {
-                    "Name" = "8:Suru.Common.EncryptionLibrary.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:Suru.Common.EncryptionLibrary.dll"
             "TargetName" = "8:"
@@ -248,9 +238,9 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_D0ACBA35FBF64CBEBB056035015090A1"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_DDF6F63A080C4F70A1F74B9F6E7DEB32"
             {
-            "SourcePath" = "8:..\\..\\..\\..\\..\\Escritorio\\Icon.ico"
+            "SourcePath" = "8:..\\InsertGenerator_UI\\Icon.ico"
             "TargetName" = "8:Icon.ico"
             "Tag" = "8:"
             "Folder" = "8:_FADD7C6FE44C44CDB40800DE9F2B567E"
@@ -465,7 +455,7 @@
             "Target" = "8:_BCE73E6B953D4FB4A00BA44A3759381B"
             "Folder" = "8:_A1B65FBF5A124E1480D81AF862EEB1B9"
             "WorkingFolder" = "8:_FADD7C6FE44C44CDB40800DE9F2B567E"
-            "Icon" = "8:_D0ACBA35FBF64CBEBB056035015090A1"
+            "Icon" = "8:_DDF6F63A080C4F70A1F74B9F6E7DEB32"
             "Feature" = "8:"
             }
             "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_BB610A1B024E4F5D89149BBEA7C050ED"
@@ -479,7 +469,7 @@
             "Target" = "8:_BCE73E6B953D4FB4A00BA44A3759381B"
             "Folder" = "8:_B30D42C4912F45EB90BFFF11808AF5B1"
             "WorkingFolder" = "8:_FADD7C6FE44C44CDB40800DE9F2B567E"
-            "Icon" = "8:_D0ACBA35FBF64CBEBB056035015090A1"
+            "Icon" = "8:_DDF6F63A080C4F70A1F74B9F6E7DEB32"
             "Feature" = "8:"
             }
         }

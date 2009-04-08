@@ -28,6 +28,7 @@ namespace Suru.InsertGenerator.GeneradorUI
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmScriptOptions));
             this.chkGenerateTransactional = new System.Windows.Forms.CheckBox();
             this.chkGenerateTables = new System.Windows.Forms.CheckBox();
             this.chkGenerateDerived = new System.Windows.Forms.CheckBox();
@@ -217,6 +218,7 @@ namespace Suru.InsertGenerator.GeneradorUI
             this.ClientSize = new System.Drawing.Size(260, 294);
             this.Controls.Add(this.gbGeneralOptions);
             this.Controls.Add(this.gbIdentityOptions);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "frmScriptOptions";
             this.ShowInTaskbar = false;
             this.Text = "Script Options";
