@@ -593,6 +593,9 @@ namespace Suru.InsertGenerator.BusinessLogic
 
                         Status = Int32.Parse(dr["Status"].ToString());
 
+                        //Timestamp columns are omitted
+                        if (Column.Type.ToLower() == "timestamp")
+                            Column.OmitColumn = true;
 
                         //Information taken out from http://msdn.microsoft.com/en-us/library/aa260398(SQL.80).aspx
 
