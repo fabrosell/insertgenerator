@@ -6,3 +6,11 @@ C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Proj
 C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\GeneradorInserts\ConsoleTesting\bin\Debug\Suru.Common.EncryptionLibrary.dll
 C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\GeneradorInserts\ConsoleTesting\bin\Debug\Suru.Common.EncryptionLibrary.pdb
 C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\GeneradorInserts\ConsoleTesting\bin\Debug\Suru.InsertGenerator.ConsoleTesting.exe.config
+C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\InsertGenerator\ConsoleTesting\bin\Debug\Suru.InsertGenerator.ConsoleTesting.exe.config
+C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\InsertGenerator\ConsoleTesting\bin\Debug\Suru.InsertGenerator.ConsoleTesting.exe
+C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\InsertGenerator\ConsoleTesting\bin\Debug\Suru.InsertGenerator.ConsoleTesting.pdb
+C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\InsertGenerator\ConsoleTesting\bin\Debug\Suru.Common.EncryptionLibrary.dll
+C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\InsertGenerator\ConsoleTesting\bin\Debug\Suru.Common.EncryptionLibrary.pdb
+C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\InsertGenerator\ConsoleTesting\obj\Debug\ResolveAssemblyReference.cache
+C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\InsertGenerator\ConsoleTesting\obj\Debug\Suru.InsertGenerator.ConsoleTesting.exe
+C:\Documents and Settings\frosell.TCS.001\Mis documentos\Visual Studio 2005\Projects\InsertGenerator\ConsoleTesting\obj\Debug\Suru.InsertGenerator.ConsoleTesting.pdb
