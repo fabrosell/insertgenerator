@@ -74,6 +74,9 @@ namespace Suru.InsertGenerator.GeneradorUI
             }
             );
 
+            //Set default encoding
+            gGenOptions.FileEncoding = Encoding.UTF8;
+
             //Load the database tables
             Load_DataBase_Tables();
 
