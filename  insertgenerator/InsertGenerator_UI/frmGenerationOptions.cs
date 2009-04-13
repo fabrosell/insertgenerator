@@ -63,6 +63,31 @@ namespace Suru.InsertGenerator.GeneradorUI
             //Max lines per block
             _Parent.gGenOptions.LinesPerBlock = (Int32)nudLinesPerSQLBlock.Value;
 
+
+            //Encoding Types
+            Encoding eEncoding;
+
+            switch ((String)cmbEncodings.SelectedItem)
+            {
+                case "ASCII":
+                    eEncoding = Encoding.ASCII;
+                    break;
+                case "UTF-7":
+                    eEncoding = Encoding.UTF7;
+                    break;
+                case "UTF-16":
+                    eEncoding = Encoding.BigEndianUnicode;
+                    break;
+                case "UTF-32":
+                    eEncoding = Encoding.UTF32;
+                    break;
+                default:
+                    eEncoding = Encoding.UTF8;
+                    break;
+            }
+
+            _Parent.gGenOptions.FileEncoding = eEncoding;
+
             _Parent.gGenOptions.IdentityOptions = IdentityGenOpts;
         }
 
@@ -71,12 +96,25 @@ namespace Suru.InsertGenerator.GeneradorUI
             try
             {
                 InitializarNudLinesPerSQLBlock();
+
+                LoadEncodingOptions();
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Invalid Lines per Block setting!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 this.Dispose();
             }
+        }
+
+        private void LoadEncodingOptions()
+        {
+            cmbEncodings.Items.Clear();
+            cmbEncodings.Items.Add("ASCII");
+            cmbEncodings.Items.Add("UTF-8");
+            cmbEncodings.Items.Add("UTF-16");
+
+            //UTF-8 by default
+            cmbEncodings.SelectedIndex = 1;
         }
 
         private void InitializarNudLinesPerSQLBlock()
@@ -106,6 +144,6 @@ namespace Suru.InsertGenerator.GeneradorUI
             {
                 nudLinesPerSQLBlock.Enabled = true;
             }
-        }
+        }        
     }
 }

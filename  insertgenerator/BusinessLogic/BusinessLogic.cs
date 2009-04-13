@@ -754,6 +754,8 @@ namespace Suru.InsertGenerator.BusinessLogic
         private Nullable<Int32> _TopRows;
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private Int32 _LinesPerBlock;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private Encoding _FileEncoding;
 
         #region Attribute Encapsulation
 
@@ -797,6 +799,12 @@ namespace Suru.InsertGenerator.BusinessLogic
         {
             get { return _LinesPerBlock; }
             set { _LinesPerBlock = value; }
+        }
+
+        public Encoding FileEncoding
+        {
+            get { return _FileEncoding; }
+            set { _FileEncoding = value; }
         }
 
         #endregion
@@ -1021,7 +1029,6 @@ namespace Suru.InsertGenerator.BusinessLogic
             dDataTypes.Add("sql_variant", DataTypes.NotSupported);
 
             dDataTypes.Add("sysname", DataTypes.Ignored);
-
         }
 
         /// <summary>
@@ -1048,10 +1055,10 @@ namespace Suru.InsertGenerator.BusinessLogic
             //NotSupported  --> These types are not supported yet. An exception must be thrown.
 
             #endregion
-
+            
             StringBuilder sb;
             String Header;
-            StreamWriter sw_insert = new StreamWriter(Path.Combine(_OutputPath, GenerateFileName(ScriptTypes.InsertScript)));
+            StreamWriter sw_insert = new StreamWriter(Path.Combine(_OutputPath, GenerateFileName(ScriptTypes.InsertScript)), false, _GenOpts.FileEncoding);
             sw_insert.AutoFlush = true;
             Table t;
             Boolean bEndInsertionDependant = false, bIncludeSeparator = true;
@@ -1306,9 +1313,11 @@ namespace Suru.InsertGenerator.BusinessLogic
             if (bIsInsert)
             {
                 sb.Append("Insert Into ");
-                sb.Append("\"");
+                //sb.Append("\"");
+                sb.Append("[");
                 sb.Append(TableName);
-                sb.Append("\"");
+                //sb.Append("\"");
+                sb.Append("]");
                 sb.Append("(");
             }
             else
@@ -1327,15 +1336,17 @@ namespace Suru.InsertGenerator.BusinessLogic
             {             
                 //Cannot select not supported data types
                 if (dDataTypes[c.Type] == DataTypes.NotSupported)
-                    throw new ApplicationException("Table " + TableName + " has a column of Data Type " + c.Type + ", which is not supported currently by application");
+                    throw new ApplicationException("Table [" + TableName + "] has a column of Data Type " + c.Type + ", which is not supported currently by application");
 
                 //Ignored and Not included data types won't be selected.
                 if (dDataTypes[c.Type] != DataTypes.NotIncluded && dDataTypes[c.Type] != DataTypes.Ignored && !c.OmitColumn && dDataTypes[c.Type] != DataTypes.Dates)
                 {
-                    sb.Append("\"");
+                    //sb.Append("\"");
+                    sb.Append("[");
                     sb.Append(c.Name);
-                    sb.Append("\"");
-                    sb.Append(",");
+                    sb.Append("]");
+                    //sb.Append("\"");
+                    sb.Append(",");                    
                 }
                 else
                 {
@@ -1348,23 +1359,29 @@ namespace Suru.InsertGenerator.BusinessLogic
                 {
                     if (bIsInsert)
                     {
-                        sb.Append("\"");
+                        //sb.Append("\"");
+                        sb.Append("[");
                         sb.Append(c.Name);
-                        sb.Append("\"");
+                        //sb.Append("\"");
+                        sb.Append("]");
                         sb.Append(",");
                     }
                     else
                     {
                         sb.Append("Convert(VarChar, ");
-                        sb.Append("\"");
+                        //sb.Append("\"");
+                        sb.Append("[");
                         sb.Append(c.Name);
-                        sb.Append("\"");
+                        sb.Append("]");
+                        //sb.Append("\"");
                         sb.Append(", ");
                         sb.Append(DateFormatStyle);
                         sb.Append(") As ");
-                        sb.Append("\"");
+                        sb.Append("[");
+                        //sb.Append("\"");
                         sb.Append(c.Name);
-                        sb.Append("\"");
+                        sb.Append("]");
+                        //sb.Append("\"");
                         sb.Append(",");
                     }
                 }
@@ -1378,9 +1395,11 @@ namespace Suru.InsertGenerator.BusinessLogic
             else
             {
                 sb.Append(" From ");
-                sb.Append("\"");
+                sb.Append("[");
+                //sb.Append("\"");
                 sb.Append(TableName);
-                sb.Append("\"");
+                //sb.Append("\"");
+                sb.Append("]");
                 sb.Append(";");
             }
 
