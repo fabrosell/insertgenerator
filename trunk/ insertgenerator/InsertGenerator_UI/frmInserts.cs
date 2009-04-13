@@ -214,12 +214,15 @@ namespace Suru.InsertGenerator.GeneradorUI
         /// <param name="bLock">True: disable controls. False: enable controls.</param>
         private void BlockControls(Boolean bLock)
         {
-            cmbDataBase.Enabled = !bLock;
-            btnChangePath.Enabled = !bLock;
-            btnChangeConnection.Enabled = !bLock;
-            chkSelectAll.Enabled = !bLock;
-            btnGenerateInserts.Enabled = !bLock;
-            btnOptions.Enabled = !bLock;
+            this.Invoke((MethodInvoker)delegate()
+            {
+                cmbDataBase.Enabled = !bLock;
+                btnChangePath.Enabled = !bLock;
+                btnChangeConnection.Enabled = !bLock;
+                chkSelectAll.Enabled = !bLock;
+                btnGenerateInserts.Enabled = !bLock;
+                btnOptions.Enabled = !bLock;
+            });
 
             //Cannot block grid for some reason...
             //dgvTables.Enabled = !bLock;

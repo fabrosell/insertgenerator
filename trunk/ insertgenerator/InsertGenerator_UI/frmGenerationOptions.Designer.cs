@@ -42,10 +42,14 @@ namespace Suru.InsertGenerator.GeneradorUI
             this.nudLinesPerSQLBlock = new System.Windows.Forms.NumericUpDown();
             this.lblRows = new System.Windows.Forms.Label();
             this.nudTopRows = new System.Windows.Forms.NumericUpDown();
+            this.gbFileOptions = new System.Windows.Forms.GroupBox();
+            this.lblEncoding = new System.Windows.Forms.Label();
+            this.cmbEncodings = new System.Windows.Forms.ComboBox();
             this.gbIdentityOptions.SuspendLayout();
             this.gbGeneralOptions.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudLinesPerSQLBlock)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudTopRows)).BeginInit();
+            this.gbFileOptions.SuspendLayout();
             this.SuspendLayout();
             // 
             // chkGenerateTransactional
@@ -133,7 +137,7 @@ namespace Suru.InsertGenerator.GeneradorUI
             this.gbIdentityOptions.Controls.Add(this.rbInsertionDependant);
             this.gbIdentityOptions.Location = new System.Drawing.Point(12, 188);
             this.gbIdentityOptions.Name = "gbIdentityOptions";
-            this.gbIdentityOptions.Size = new System.Drawing.Size(231, 95);
+            this.gbIdentityOptions.Size = new System.Drawing.Size(236, 95);
             this.gbIdentityOptions.TabIndex = 8;
             this.gbIdentityOptions.TabStop = false;
             this.gbIdentityOptions.Text = "Identity Options";
@@ -211,11 +215,46 @@ namespace Suru.InsertGenerator.GeneradorUI
             this.nudTopRows.TabIndex = 5;
             this.nudTopRows.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
+            // gbFileOptions
+            // 
+            this.gbFileOptions.Controls.Add(this.cmbEncodings);
+            this.gbFileOptions.Controls.Add(this.lblEncoding);
+            this.gbFileOptions.Location = new System.Drawing.Point(12, 289);
+            this.gbFileOptions.Name = "gbFileOptions";
+            this.gbFileOptions.Size = new System.Drawing.Size(234, 53);
+            this.gbFileOptions.TabIndex = 10;
+            this.gbFileOptions.TabStop = false;
+            this.gbFileOptions.Text = "File Options";
+            // 
+            // lblEncoding
+            // 
+            this.lblEncoding.AutoSize = true;
+            this.lblEncoding.Location = new System.Drawing.Point(6, 18);
+            this.lblEncoding.Name = "lblEncoding";
+            this.lblEncoding.Size = new System.Drawing.Size(52, 13);
+            this.lblEncoding.TabIndex = 0;
+            this.lblEncoding.Text = "Encoding";
+            // 
+            // cmbEncodings
+            // 
+            this.cmbEncodings.FormattingEnabled = true;
+            this.cmbEncodings.Items.AddRange(new object[] {
+            "ASCII",
+            "UTF-7",
+            "UTF-8",
+            "UTF-16",
+            "UTF-32"});
+            this.cmbEncodings.Location = new System.Drawing.Point(107, 15);
+            this.cmbEncodings.Name = "cmbEncodings";
+            this.cmbEncodings.Size = new System.Drawing.Size(121, 21);
+            this.cmbEncodings.TabIndex = 1;
+            // 
             // frmScriptOptions
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(260, 294);
+            this.ClientSize = new System.Drawing.Size(260, 351);
+            this.Controls.Add(this.gbFileOptions);
             this.Controls.Add(this.gbGeneralOptions);
             this.Controls.Add(this.gbIdentityOptions);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -230,6 +269,8 @@ namespace Suru.InsertGenerator.GeneradorUI
             this.gbGeneralOptions.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudLinesPerSQLBlock)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudTopRows)).EndInit();
+            this.gbFileOptions.ResumeLayout(false);
+            this.gbFileOptions.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -249,5 +290,8 @@ namespace Suru.InsertGenerator.GeneradorUI
         private System.Windows.Forms.NumericUpDown nudTopRows;
         private System.Windows.Forms.Label lblLPSB;
         private System.Windows.Forms.NumericUpDown nudLinesPerSQLBlock;
+        private System.Windows.Forms.GroupBox gbFileOptions;
+        private System.Windows.Forms.ComboBox cmbEncodings;
+        private System.Windows.Forms.Label lblEncoding;
     }
 }
