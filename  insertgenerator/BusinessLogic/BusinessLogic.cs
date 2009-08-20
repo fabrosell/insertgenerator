@@ -45,7 +45,7 @@ namespace Suru.InsertGenerator.BusinessLogic
 
         //Connections Strings. I currently know only two authentication methods.
         private const String SQL_Authenticacion_ConnectionString = "Data Source=" + ServerPrefix + ";Initial Catalog=" + DatabasePrefix + ";User Id=" + UserPrefix + ";Password=" + PasswordPrefix + ";";
-        private const String Windows_Authenticacion_ConnectionString = "Server=" + ServerPrefix + ";Database=" + DatabasePrefix + ";Trusted_Connection=True;";        
+        private const String Windows_Authenticacion_ConnectionString = "Server=" + ServerPrefix + ";Database=" + DatabasePrefix + ";Trusted_Connection=True;";
 
         #endregion
 
@@ -153,7 +153,7 @@ namespace Suru.InsertGenerator.BusinessLogic
                 {
                     XmlDocument xmlConnectionFile = new XmlDocument();
                     String FileData = null;
-                  
+
                     try
                     {
                         FileData = Encryption.SymetricDecrypt(sr.ReadToEnd());
@@ -251,7 +251,7 @@ namespace Suru.InsertGenerator.BusinessLogic
             {
                 throw new ApplicationException("Can't load configuration file " + ConfigurationManager.AppSettings.Get("ConfigurationFile") + " --> " + ex.Message);
             }
-            
+
             return lConnections;
         }
 
@@ -286,7 +286,7 @@ namespace Suru.InsertGenerator.BusinessLogic
         /// Save the current conection to the XML
         /// </summary>
         public void SaveConnection(List<Connection> lConnections)
-        {            
+        {
             /* Configuration File Structure
              * <Connections>
              *  <Connection>
@@ -309,7 +309,7 @@ namespace Suru.InsertGenerator.BusinessLogic
                 String sXmlContent = null;
 
                 try
-                {                                        
+                {
                     sXmlContent = Encryption.SymetricDecrypt(sr.ReadToEnd());
                     sr.Close();
                 }
@@ -349,7 +349,7 @@ namespace Suru.InsertGenerator.BusinessLogic
                     }
 
                     //It's always easier to rewrite the connection.
-                    sConnectionNodes.Append( "<Connection>" + 
+                    sConnectionNodes.Append("<Connection>" +
                                                 "<Host>" + _HostName + "</Host>" +
                                                 "<User>" + sUserName + "</User>" +
                                                 "<Pass>" + sPassword + "</Pass>" +
@@ -514,7 +514,7 @@ namespace Suru.InsertGenerator.BusinessLogic
 
             return TableList;
         }
-        
+
         /// <summary>
         /// Gets the table ID for the specified Table.
         /// </summary>
@@ -533,7 +533,7 @@ namespace Suru.InsertGenerator.BusinessLogic
                     SqlCommand sqlCommand = new SqlCommand("Use " + _Last_DataBase + "; Select IsNull(ID, -1) As ID From SysObjects Where Name = '" + TableName + "';");
                     sqlCommand.Connection = sqlConn;
 
-                    SqlDataReader dr = sqlCommand.ExecuteReader();                    
+                    SqlDataReader dr = sqlCommand.ExecuteReader();
 
                     //Read the Table ID.
                     if (dr.Read())
@@ -563,7 +563,7 @@ namespace Suru.InsertGenerator.BusinessLogic
 
             t.HasIdentityColumn = false;
             t.Columns = new List<Columns>();
-            
+
             Columns Column;
 
             try
@@ -756,6 +756,8 @@ namespace Suru.InsertGenerator.BusinessLogic
         private Int32 _LinesPerBlock;
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private Encoding _FileEncoding;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private Boolean _SQL2000Compatible;
 
         #region Attribute Encapsulation
 
@@ -805,6 +807,12 @@ namespace Suru.InsertGenerator.BusinessLogic
         {
             get { return _FileEncoding; }
             set { _FileEncoding = value; }
+        }
+
+        public Boolean SQL2000Compatible
+        {
+            get { return _SQL2000Compatible; }
+            set { _SQL2000Compatible = value; }
         }
 
         #endregion
@@ -919,7 +927,7 @@ namespace Suru.InsertGenerator.BusinessLogic
         private List<Columns> _Columns;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private Boolean _HasIdentityColumn;        
+        private Boolean _HasIdentityColumn;
 
         #region Attribute Encapsulation
 
@@ -963,7 +971,7 @@ namespace Suru.InsertGenerator.BusinessLogic
             set { _TableDependancy = value; }
         }
 
-        #endregion 
+        #endregion
     }
 
     /// <summary>
@@ -1025,7 +1033,7 @@ namespace Suru.InsertGenerator.BusinessLogic
             dDataTypes.Add("smallmoney", DataTypes.Decimals);
 
             dDataTypes.Add("timestamp", DataTypes.NotIncluded);
-            
+
             dDataTypes.Add("sql_variant", DataTypes.NotSupported);
 
             dDataTypes.Add("sysname", DataTypes.Ignored);
@@ -1036,8 +1044,10 @@ namespace Suru.InsertGenerator.BusinessLogic
         /// </summary>
         /// <param name="lTables">Tables to Generate Inserts.</param>
         public Boolean GenerateInserts(List<String> lTables)
-        {            
-            Int64 TableID;            
+        {
+            #region File Generation (full size)
+
+            Int64 TableID;
 
             //This list will hold all tables already generated.
             List<String> GeneratedTables = new List<String>();
@@ -1055,26 +1065,63 @@ namespace Suru.InsertGenerator.BusinessLogic
             //NotSupported  --> These types are not supported yet. An exception must be thrown.
 
             #endregion
-            
+
             StringBuilder sb;
             String Header;
-            StreamWriter sw_insert = new StreamWriter(Path.Combine(_OutputPath, GenerateFileName(ScriptTypes.InsertScript)), false, _GenOpts.FileEncoding);
-            sw_insert.AutoFlush = true;
             Table t;
             Boolean bEndInsertionDependant = false, bIncludeSeparator = true;
             Int32 MaxData, LinesPerBlock = 0;
 
-            sw_insert.WriteLine("-- Generated by Suru Insert Generator - " + DateTime.Now.ToString("yyyyMMdd HH:mm:ss"));
-            sw_insert.WriteLine();
+            StreamWriter sw_insert = null;
+            FileStream fs_insert = null;
+            Byte[] Data;
+
+            String TempFileName = Path.GetTempFileName();
+
+            if (!_GenOpts.SQL2000Compatible)
+            {
+                //sw_insert = new StreamWriter(Path.Combine(_OutputPath, GenerateFileName(ScriptTypes.InsertScript)), false, _GenOpts.FileEncoding);
+                sw_insert = new StreamWriter(TempFileName, false, _GenOpts.FileEncoding);
+                sw_insert.AutoFlush = true;
+
+                sw_insert.WriteLine("-- Generated by Suru Insert Generator - " + DateTime.Now.ToString("yyyyMMdd HH:mm:ss"));
+                sw_insert.WriteLine();
+                sw_insert.WriteLine("-- Please test this script before delivering it!");
+                sw_insert.WriteLine();
+            }
+            else
+            {
+                //fs_insert = new FileStream(Path.Combine(_OutputPath, GenerateFileName(ScriptTypes.InsertScript)), FileMode.OpenOrCreate);
+                fs_insert = new FileStream(TempFileName, FileMode.OpenOrCreate);
+
+                Data = SQL2000Encoding("-- Generated by Suru Insert Generator - " + DateTime.Now.ToString("yyyyMMdd HH:mm:ss") + Environment.NewLine + Environment.NewLine);
+                fs_insert.Write(Data, 0, Data.Length);
+
+                Data = SQL2000Encoding("-- Please test this script before delivering it!" + Environment.NewLine + Environment.NewLine);
+                fs_insert.Write(Data, 0, Data.Length);
+            }
+
 
             #region Beggining of transactional script (if apply)
-            
+
             if (_GenOpts.TransacionalScript)
             {
-                sw_insert.WriteLine("Declare @TransactionName VarChar(20)");
-                sw_insert.WriteLine("Set @TransactionName = 'SuruInsert'");
-                sw_insert.WriteLine("Begin Tran @TransactionName");
-                sw_insert.WriteLine();
+                if (!_GenOpts.SQL2000Compatible)
+                {
+                    sw_insert.WriteLine("Declare @TransactionName VarChar(20)");
+                    sw_insert.WriteLine("Set @TransactionName = 'SuruInsert'");
+                    sw_insert.WriteLine("Begin Tran @TransactionName");
+                    sw_insert.WriteLine();
+                }
+                else
+                {
+                    Data = SQL2000Encoding("Declare @TransactionName VarChar(20)" + Environment.NewLine);
+                    fs_insert.Write(Data, 0, Data.Length);
+                    Data = SQL2000Encoding("Set @TransactionName = 'SuruInsert'" + Environment.NewLine);
+                    fs_insert.Write(Data, 0, Data.Length);
+                    Data = SQL2000Encoding("Begin Tran @TransactionName" + Environment.NewLine + Environment.NewLine);
+                    fs_insert.Write(Data, 0, Data.Length);
+                }
             }
 
             #endregion
@@ -1087,10 +1134,24 @@ namespace Suru.InsertGenerator.BusinessLogic
 
             lTables = SortTablesByDependancy(lTables, _DBConnection, ref GraphHasCycles);
 
+            if (GraphHasCycles)
+            {
+                if (!_GenOpts.SQL2000Compatible)
+                {
+                    sw_insert.WriteLine("-- Warning: data tables has cycles between them. Those tables are not in order.");
+                    sw_insert.WriteLine();
+                }
+                else
+                {
+                    Data = SQL2000Encoding("-- Warning: data tables has cycles between them. Those tables are not in order." + Environment.NewLine);
+                    fs_insert.Write(Data, 0, Data.Length);
+                }
+            }
+
             foreach (String TableName in lTables)
             {
                 TableID = _DBConnection.GetTableID(TableName);
-               
+
                 t = _DBConnection.GetTableColumns(TableID);
 
                 #region Check for Identity Columns
@@ -1101,9 +1162,18 @@ namespace Suru.InsertGenerator.BusinessLogic
                     {
                         case IdentityGenerationOptions.IdentityInsert:
                             //Set Identity Insert Table On / Off
-                            sw_insert.WriteLine();
-                            sw_insert.WriteLine("Set Identity_Insert " + TableName + " On;");
-                            sw_insert.WriteLine();
+                            if (!_GenOpts.SQL2000Compatible)
+                            {
+                                sw_insert.WriteLine();
+                                sw_insert.WriteLine("Set Identity_Insert " + TableName + " On;");
+                                sw_insert.WriteLine();
+                            }
+                            else
+                            {
+                                Data = SQL2000Encoding(Environment.NewLine + "Set Identity_Insert " + TableName + " On;" + Environment.NewLine);
+                                fs_insert.Write(Data, 0, Data.Length);
+                            }
+
                             bEndInsertionDependant = true;
                             break;
                         case IdentityGenerationOptions.InsertionDependant:
@@ -1145,25 +1215,44 @@ namespace Suru.InsertGenerator.BusinessLogic
                     //Lines per block reached.
                     if (LinesPerBlock == _GenOpts.LinesPerBlock && !_GenOpts.TransacionalScript)
                     {
-                        sw_insert.WriteLine();
-
-                        //Disable Identity Insert
-                        if (bEndInsertionDependant)
+                        if (!_GenOpts.SQL2000Compatible)
                         {
-                            sw_insert.WriteLine("Set Identity_Insert " + TableName + " Off;");
+                            sw_insert.WriteLine();
+
+                            //Disable Identity Insert
+                            if (bEndInsertionDependant && t.HasIdentityColumn)
+                            {
+                                sw_insert.WriteLine("Set Identity_Insert " + TableName + " Off;");
+                            }
+
+                            sw_insert.WriteLine();
+
+                            //Go Statement - This sentence completes the batch and the query's memory consupmtion.
+                            //Remember: "Go" does not have semicolon.
+                            sw_insert.WriteLine("Go");
+                            sw_insert.WriteLine();
+
+                            //Re-enable Identity Insert
+                            if (bEndInsertionDependant && t.HasIdentityColumn)
+                            {
+                                sw_insert.WriteLine("Set Identity_Insert " + TableName + " On;");
+                            }
+
                             sw_insert.WriteLine();
                         }
-
-                        //Go Statement - This sentence completes the batch and the query's memory consupmtion.
-                        //Remember: "Go" does not have semicolon.
-                        sw_insert.WriteLine("Go");
-                        sw_insert.WriteLine();
-
-                        //Re-enable Identity Insert
-                        if (bEndInsertionDependant)
+                        else
                         {
-                            sw_insert.WriteLine("Set Identity_Insert " + TableName + " On;");
-                            sw_insert.WriteLine();
+                            //Disable Identity Insert
+                            if (bEndInsertionDependant && t.HasIdentityColumn)
+                            {
+                                Data = SQL2000Encoding(Environment.NewLine + "Set Identity_Insert " + TableName + " Off;" + Environment.NewLine + "Go" + Environment.NewLine + "Set Identity_Insert " + TableName + " On;" + Environment.NewLine);
+                                fs_insert.Write(Data, 0, Data.Length);
+                            }
+                            else
+                            {
+                                Data = SQL2000Encoding(Environment.NewLine + Environment.NewLine + "Go" + Environment.NewLine + Environment.NewLine);
+                                fs_insert.Write(Data, 0, Data.Length);
+                            }
                         }
 
                         //Resets the line counter.
@@ -1171,11 +1260,13 @@ namespace Suru.InsertGenerator.BusinessLogic
                     }
                     #endregion
 
-                    sb = new StringBuilder();                    
+                    sb = new StringBuilder();
                     sb.Append(Header);
 
                     foreach (Columns c in t.Columns)
                     {
+                        #region Process Column Data
+
                         bIncludeSeparator = true;
 
                         if (c.Data != null && i < c.Data.Count)
@@ -1240,8 +1331,19 @@ namespace Suru.InsertGenerator.BusinessLogic
 
                     sb.Append(");");
 
+                        #endregion
+
                     //Now I have the insertion string. I should write it to a text file.
-                    sw_insert.WriteLine(sb.ToString());
+                    if (!_GenOpts.SQL2000Compatible)
+                    {
+                        sw_insert.WriteLine(sb.ToString());
+                    }
+                    else
+                    {
+                        Data = SQL2000Encoding(sb.ToString() + Environment.NewLine);
+                        fs_insert.Write(Data, 0, Data.Length);
+                        fs_insert.Flush();
+                    }
 
                     //Increments the line counter
                     LinesPerBlock++;
@@ -1251,11 +1353,25 @@ namespace Suru.InsertGenerator.BusinessLogic
 
                 if (bEndInsertionDependant)
                 {
-                    sw_insert.WriteLine();
-                    sw_insert.WriteLine("Set Identity_Insert " + TableName + " Off;");                    
+                    if (!_GenOpts.SQL2000Compatible)
+                    {
+                        sw_insert.WriteLine();
+                        sw_insert.WriteLine("Set Identity_Insert " + TableName + " Off;");
+                    }
+                    else
+                    {
+                        Data = SQL2000Encoding(Environment.NewLine + "Set Identity_Insert " + TableName + " Off;");
+                        fs_insert.Write(Data, 0, Data.Length);
+                    }
                 }
 
-                sw_insert.WriteLine();
+                if (!_GenOpts.SQL2000Compatible)
+                    sw_insert.WriteLine();
+                else
+                {
+                    Data = SQL2000Encoding(Environment.NewLine);
+                    fs_insert.Write(Data, 0, Data.Length);
+                }
             }
 
             #region Finalizing transactional script (if apply)
@@ -1263,39 +1379,164 @@ namespace Suru.InsertGenerator.BusinessLogic
             //Script is transanctional. Commit if OK. Rollback otherwise.
             if (_GenOpts.TransacionalScript)
             {
-                sw_insert.WriteLine();
-                sw_insert.WriteLine("If @@Error = 0");
-                sw_insert.WriteLine("   Begin");
-                sw_insert.WriteLine("     Commit Tran @TransactionName");
-                sw_insert.WriteLine("     Print 'Transaction ' + @TransactionName + ' was succesfully commited.'");
-                sw_insert.WriteLine("   End");
-                sw_insert.WriteLine("Else");
-                sw_insert.WriteLine("   Begin");
-                sw_insert.WriteLine("     RollBack Tran @TransactionName");
-                sw_insert.WriteLine("     Print 'Transaction ' + @TransactionName + ' could not be commited and was succesfully rollbacked.'");
-                sw_insert.WriteLine("");
-                sw_insert.WriteLine("   End");
-                sw_insert.WriteLine();
+                if (!_GenOpts.SQL2000Compatible)
+                {
+                    sw_insert.WriteLine();
+                    sw_insert.WriteLine("If @@Error = 0");
+                    sw_insert.WriteLine("   Begin");
+                    sw_insert.WriteLine("     Commit Tran @TransactionName");
+                    sw_insert.WriteLine("     Print 'Transaction ' + @TransactionName + ' was succesfully commited.'");
+                    sw_insert.WriteLine("   End");
+                    sw_insert.WriteLine("Else");
+                    sw_insert.WriteLine("   Begin");
+                    sw_insert.WriteLine("     RollBack Tran @TransactionName");
+                    sw_insert.WriteLine("     Print 'Transaction ' + @TransactionName + ' could not be commited and was succesfully rollbacked.'");
+                    sw_insert.WriteLine("");
+                    sw_insert.WriteLine("   End");
+                    sw_insert.WriteLine();
+                }
+                else
+                {
+                    Data = SQL2000Encoding(Environment.NewLine + "If @@Error = 0" + Environment.NewLine);
+                    fs_insert.Write(Data, 0, Data.Length);
+
+                    Data = SQL2000Encoding("   Begin" + Environment.NewLine);
+                    fs_insert.Write(Data, 0, Data.Length);
+                    Data = SQL2000Encoding("     Commit Tran @TransactionName" + Environment.NewLine);
+                    fs_insert.Write(Data, 0, Data.Length);
+                    Data = SQL2000Encoding("     Print 'Transaction ' + @TransactionName + ' was succesfully commited.'" + Environment.NewLine);
+                    fs_insert.Write(Data, 0, Data.Length);
+                    Data = SQL2000Encoding("   End" + Environment.NewLine);
+                    fs_insert.Write(Data, 0, Data.Length);
+                    Data = SQL2000Encoding("Else" + Environment.NewLine);
+                    fs_insert.Write(Data, 0, Data.Length);
+                    Data = SQL2000Encoding("   Begin" + Environment.NewLine);
+                    fs_insert.Write(Data, 0, Data.Length);
+                    Data = SQL2000Encoding("     RollBack Tran @TransactionName" + Environment.NewLine);
+                    fs_insert.Write(Data, 0, Data.Length);
+                    Data = SQL2000Encoding("     Print 'Transaction ' + @TransactionName + ' could not be commited and was succesfully rollbacked.'" + Environment.NewLine + Environment.NewLine);
+                    fs_insert.Write(Data, 0, Data.Length);
+                    Data = SQL2000Encoding("   End" + Environment.NewLine);
+                    fs_insert.Write(Data, 0, Data.Length);
+                }
             }
 
             #endregion
-            
-            sw_insert.WriteLine("-- Generated by Suru Insert Generator - " + DateTime.Now.ToString("yyyyMMdd HH:mm:ss"));
-            sw_insert.WriteLine();
 
-            if (GraphHasCycles)
+            #region Closing file...
+
+            if (!_GenOpts.SQL2000Compatible)
             {
-                sw_insert.WriteLine("-- Warning: data tables has cycles between them. Those tables are not in order.");
+                sw_insert.WriteLine("-- Generated by Suru Insert Generator - " + DateTime.Now.ToString("yyyyMMdd HH:mm:ss"));
                 sw_insert.WriteLine();
+
+                if (GraphHasCycles)
+                {
+                    sw_insert.WriteLine("-- Warning: data tables has cycles between them. Those tables are not in order.");
+                    sw_insert.WriteLine();
+                }
+
+                sw_insert.WriteLine("Go");
+
+                sw_insert.Close();
+            }
+            else
+            {
+                Data = SQL2000Encoding("-- Generated by Suru Insert Generator - " + DateTime.Now.ToString("yyyyMMdd HH:mm:ss") + Environment.NewLine);
+                fs_insert.Write(Data, 0, Data.Length);
+
+                if (GraphHasCycles)
+                {
+                    Data = SQL2000Encoding("-- Warning: data tables has cycles between them. Those tables are not in order.");
+                    fs_insert.Write(Data, 0, Data.Length);
+                }
+
+                Data = SQL2000Encoding("Go" + Environment.NewLine);
+                fs_insert.Write(Data, 0, Data.Length);
+
+                fs_insert.Close();
             }
 
-            sw_insert.WriteLine("Go");
+            #endregion
 
-            sw_insert.Close();
+            #endregion
 
-            
+            #region Size Checking and Split File if neccesary
+
+            //File Size Cheking
+            //Setting: MaximumFileSize (in megabytes)
+            Int64 MaximumFileSize = Int32.Parse(ConfigurationManager.AppSettings.Get("MaximumFileSize")) * 1024 * 1024;
+
+            FileInfo fi = new FileInfo(TempFileName);
+            String FinalFileName = Path.Combine(_OutputPath, GenerateFileName(ScriptTypes.InsertScript));
+
+            if (fi.Length > MaximumFileSize)
+            {
+                //File is longer than it should be. Split file.
+                StreamReader sr = new StreamReader(TempFileName);
+                FileStream fs = null;
+
+                Int64 CurrentSize = 0;
+                Int16 CurrentFileNumber = 1;
+                String PartName;
+
+                PartName = Path.Combine(Path.GetDirectoryName(FinalFileName), Path.GetFileNameWithoutExtension(FinalFileName) + "_" + CurrentFileNumber.ToString() + Path.GetExtension(FinalFileName));
+                fs = new FileStream(PartName, FileMode.OpenOrCreate);
+
+                while (!sr.EndOfStream)
+                {
+                    Data = SQL2000Encoding(sr.ReadLine() + Environment.NewLine);
+
+                    if (CurrentSize + Data.Length > MaximumFileSize)
+                    {
+                        CurrentFileNumber++;
+                        CurrentSize = 0;
+
+                        //Create next part number
+                        fs.Close();
+                        PartName = Path.Combine(Path.GetDirectoryName(FinalFileName), Path.GetFileNameWithoutExtension(FinalFileName) + "_" + CurrentFileNumber.ToString() + Path.GetExtension(FinalFileName));
+                        fs = new FileStream(PartName, FileMode.OpenOrCreate);                        
+                    }
+
+                    fs.Write(Data, 0, Data.Length);
+                    fs.Flush();
+
+                    CurrentSize += Data.Length;
+                }
+
+                fs.Close();
+                sr.Close();
+
+                //Deletes the big file
+                File.Delete(TempFileName);
+            }
+            else
+            {
+                //File is below maximum allowed size.
+                if (File.Exists(FinalFileName))
+                    File.Delete(FinalFileName);
+
+                File.Move(TempFileName, FinalFileName);
+            }
+
+            #endregion
 
             return GraphHasCycles;
+        }
+
+        /// <summary>
+        /// Encodes to support old SQL2000 characters.
+        /// </summary>
+        /// <param name="txt">Text to Encode</param>
+        /// <returns>Byte Array</returns>
+        private Byte[] SQL2000Encoding(String txt)
+        {
+            Byte[] Des = new Byte[txt.Length];
+
+            for (Int32 i = 0; i < txt.Length; i++)
+                Des[i] = (Byte)(txt[i]);
+
+            return Des;
         }
 
         /// <summary>
@@ -1333,7 +1574,7 @@ namespace Suru.InsertGenerator.BusinessLogic
             }
 
             foreach (Columns c in lColumns)
-            {             
+            {
                 //Cannot select not supported data types
                 if (dDataTypes[c.Type] == DataTypes.NotSupported)
                     throw new ApplicationException("Table [" + TableName + "] has a column of Data Type " + c.Type + ", which is not supported currently by application");
@@ -1346,7 +1587,7 @@ namespace Suru.InsertGenerator.BusinessLogic
                     sb.Append(c.Name);
                     sb.Append("]");
                     //sb.Append("\"");
-                    sb.Append(",");                    
+                    sb.Append(",");
                 }
                 else
                 {
@@ -1385,7 +1626,7 @@ namespace Suru.InsertGenerator.BusinessLogic
                         sb.Append(",");
                     }
                 }
-            }            
+            }
 
             //Remove the last comma separator
             sb.Remove(sb.Length - 1, 1);
@@ -1439,9 +1680,9 @@ namespace Suru.InsertGenerator.BusinessLogic
 
             _Script_Number++;
 
-            return sb.ToString();            
+            return sb.ToString();
         }
-        
+
         /// <summary>
         /// Sort de tables by its dependancy. Less dependant ones first, most dependants last.
         /// </summary>
@@ -1474,14 +1715,14 @@ namespace Suru.InsertGenerator.BusinessLogic
                 TableDependancy.TableName = tablename;
                 TableDependancy.TableDependancy = DBConnection.ListTableDependancy(tablename);
 
-                Dependancy.Add(TableDependancy);                                
+                Dependancy.Add(TableDependancy);
 
                 if (TableDependancy.TableDependancy != null)
                     //Only check selected tables, not all of them
                     for (Int16 j = 0; j < lTables.Count; j++)
                         //Not checking itself
                         if (i != j && TableDependancy.TableDependancy.Contains(lTables[j]))
-                            TableOrder[i, j] = 1;                
+                            TableOrder[i, j] = 1;
             }
 
             /*
