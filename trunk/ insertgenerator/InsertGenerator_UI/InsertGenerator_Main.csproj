@@ -11,6 +11,7 @@
     <AssemblyName>Suru.InsertGenerator.GeneradorUI</AssemblyName>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>InsertGenerator_Strong_Name_Key.snk</AssemblyOriginatorKeyFile>
+    <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

@@ -86,6 +86,21 @@ namespace Suru.InsertGenerator.GeneradorUI
 
             if (WorkThread != null)
                 WorkThread = null;
+
+
+            //Initializes the Generation Options
+            gGenOptions = new GenerationOptions();
+
+            gGenOptions.CorrelatedDataTablesScript = false;
+            gGenOptions.DerivedTableScript = false;
+            gGenOptions.FileEncoding = Encoding.UTF8;
+            gGenOptions.IdentityOptions = IdentityGenerationOptions.IdentityInsert;
+            gGenOptions.IncludeTableScripts = false;
+            gGenOptions.LinesPerBlock = 1500;
+            gGenOptions.TopRows = null;
+            gGenOptions.TransacionalScript = false;
+            gGenOptions.SQL2000Compatible = false;
+
         }
 
         /// <summary>

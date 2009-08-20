@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using System.Text;
+using System.Configuration;
 using System.Collections.Generic;
 using Suru.Common.EncryptionLibrary;
 
@@ -12,17 +14,90 @@ namespace Suru.InsertGenerator.ConsoleTesting
             //Test_Asymetric_Encryption_Class();
             //Test_Symetric_Encryption_Class();
             //Test_Salt_and_Pass_Generator();
-            Test_Ordering_Table_List();
+            //Test_Ordering_Table_List();
+
+            Split_File_Testing();
 
             Console.WriteLine();
             Console.WriteLine("Press ENTER key to close.");
             Console.ReadLine();
         }
 
+        private static void Split_File_Testing()
+        {
+            Console.WriteLine("Splitting starts");
+
+            Byte[] Data;
+            Int64 MaximumFileSize = Int32.Parse(ConfigurationManager.AppSettings.Get("MaximumFileSize")) * 1024 * 1024;
+
+            String TempFileName = @"c:\Documents and Settings\frosell.TCS.001\Escritorio\Duoc.sql";
+
+            FileInfo fi = new FileInfo(TempFileName);
+            String FinalFileName = @"c:\Documents and Settings\frosell.TCS.001\Escritorio\Suru.dat";
+
+            if (fi.Length > MaximumFileSize)
+            {
+                //File is longer than it should be. Split file.
+                StreamReader sr = new StreamReader(TempFileName);
+                FileStream fs = null;
+
+                Int64 CurrentSize = 0;
+                Int16 CurrentFileNumber = 1;
+                String PartName;
+
+                PartName = Path.Combine(Path.GetDirectoryName(FinalFileName), Path.GetFileNameWithoutExtension(FinalFileName) + "_" + CurrentFileNumber.ToString() + Path.GetExtension(FinalFileName));
+                fs = new FileStream(PartName, FileMode.OpenOrCreate);
+
+                while (!sr.EndOfStream)
+                {
+                    Data = SQL2000Encoding(sr.ReadLine() + Environment.NewLine);
+
+                    if (CurrentSize + Data.Length > MaximumFileSize)
+                    {
+                        CurrentFileNumber++;
+                        CurrentSize = 0;
+
+                        //Create next part number
+                        fs.Close();
+                        PartName = Path.Combine(Path.GetDirectoryName(FinalFileName), Path.GetFileNameWithoutExtension(FinalFileName) + "_" + CurrentFileNumber.ToString() + Path.GetExtension(FinalFileName));
+                        fs = new FileStream(PartName, FileMode.OpenOrCreate);                    
+                    }
+
+                    fs.Write(Data, 0, Data.Length);
+                    fs.Flush();
+
+                    CurrentSize += Data.Length;
+                }
+
+                fs.Close();
+                sr.Close();
+
+                //Deletes the big file
+                //File.Delete(TempFileName);
+
+                Console.WriteLine("Generated " + CurrentFileNumber + " files.");
+            }
+        }
+
+        /// <summary>
+        /// Encodes to support old SQL2000 characters.
+        /// </summary>
+        /// <param name="txt">Text to Encode</param>
+        /// <returns>Byte Array</returns>
+        private static Byte[] SQL2000Encoding(String txt)
+        {
+            Byte[] Des = new Byte[txt.Length];
+
+            for (Int32 i = 0; i < txt.Length; i++)
+                Des[i] = (Byte)(txt[i]);
+
+            return Des;
+        }
+
         //Test Symetric encryption / decryption features
         private static void Test_Symetric_Encryption_Class()
         {
-            //El método soporta más de 255 caracteres...
+            //Method supports more than 255 characters
             String TextToEncrypt = "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345";
 
             Console.WriteLine("Text to process: " + TextToEncrypt);

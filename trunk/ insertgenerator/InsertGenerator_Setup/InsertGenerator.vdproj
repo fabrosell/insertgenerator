@@ -15,30 +15,6 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_4CF982BDEDD8FB525C6AE97F900CCAC3"
-        "OwnerKey" = "8:_BCE73E6B953D4FB4A00BA44A3759381B"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_69A68BD2B9C7E0CA67B759DE46D26F8F"
-        "OwnerKey" = "8:_7B45EA45D86C4ABAA4EBCFFBD1A3D769"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_69A68BD2B9C7E0CA67B759DE46D26F8F"
-        "OwnerKey" = "8:_BCE73E6B953D4FB4A00BA44A3759381B"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_69A68BD2B9C7E0CA67B759DE46D26F8F"
-        "OwnerKey" = "8:_4CF982BDEDD8FB525C6AE97F900CCAC3"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_7B45EA45D86C4ABAA4EBCFFBD1A3D769"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -76,19 +52,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_4CF982BDEDD8FB525C6AE97F900CCAC3"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_7B45EA45D86C4ABAA4EBCFFBD1A3D769"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_69A68BD2B9C7E0CA67B759DE46D26F8F"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -186,58 +150,6 @@
         }
         "File"
         {
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_4CF982BDEDD8FB525C6AE97F900CCAC3"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Suru.InsertGenerator.BusinessLogic, Version=1.0.3.0, Culture=neutral, PublicKeyToken=ff8d53d2ffa91156, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                }
-            "SourcePath" = "8:Suru.InsertGenerator.BusinessLogic.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_FADD7C6FE44C44CDB40800DE9F2B567E"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:TRUE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_69A68BD2B9C7E0CA67B759DE46D26F8F"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Suru.Common.EncryptionLibrary, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ff8d53d2ffa91156, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                }
-            "SourcePath" = "8:Suru.Common.EncryptionLibrary.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_FADD7C6FE44C44CDB40800DE9F2B567E"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:TRUE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_DDF6F63A080C4F70A1F74B9F6E7DEB32"
             {
             "SourcePath" = "8:..\\InsertGenerator_UI\\Icon.ico"
@@ -341,7 +253,7 @@
         "Keywords" = "8:"
         "ARPCOMMENTS" = "8:"
         "ARPURLINFOABOUT" = "8:www.surulabs.cl"
-        "ARPPRODUCTICON" = "8:"
+        "ARPPRODUCTICON" = "8:_DDF6F63A080C4F70A1F74B9F6E7DEB32"
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
         "UseSystemSearchPath" = "11:TRUE"
