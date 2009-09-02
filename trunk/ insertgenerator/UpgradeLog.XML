@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="InsertsGenerator">
+</Property><Property Name="Solution File" Value="C:\Documents and Settings\Suru\My Documents\Visual Studio 2008\Projects\InsertGenerator\ insertgenerator\InsertsGenerator.sln">
+</Property><Property Name="Date" Value="Martes, 01 de Septiembre de 2009">
+</Property><Property Name="Time" Value="22:46">
+</Property></Properties><Event ErrorLevel="0" Project="InsertGenerator_Main" Source="InsertGenerator_UI\InsertGenerator_Main.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="InsertGenerator_Main" Source="InsertGenerator_UI\InsertGenerator_Main.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="BusinessLogic" Source="BusinessLogic\BusinessLogic.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="BusinessLogic" Source="BusinessLogic\BusinessLogic.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="EncryptionLibrary" Source="EncryptionLibrary\EncryptionLibrary.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="EncryptionLibrary" Source="EncryptionLibrary\EncryptionLibrary.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="ConsoleTesting" Source="ConsoleTesting\ConsoleTesting.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="ConsoleTesting" Source="ConsoleTesting\ConsoleTesting.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="" Source="InsertsGenerator.sln" Description="Solution converted successfully">
+</Event><Event ErrorLevel="3" Project="" Source="InsertsGenerator.sln" Description="Converted">
+</Event><Event ErrorLevel="0" Project="InsertGenerator_Main" Source="InsertGenerator_UI\InsertGenerator_Main.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event><Event ErrorLevel="0" Project="BusinessLogic" Source="BusinessLogic\BusinessLogic.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event><Event ErrorLevel="0" Project="EncryptionLibrary" Source="EncryptionLibrary\EncryptionLibrary.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event><Event ErrorLevel="0" Project="ConsoleTesting" Source="ConsoleTesting\ConsoleTesting.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event></UpgradeLog>
