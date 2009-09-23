@@ -1,1 +1,0 @@
-D:\Mis Documentos\Visual Studio 2005\Projects\InsertGenerator\InsertGenerator_UI\bin\Debug\Suru.InsertGenerator.GeneradorUI.exe.config
